@@ -12,9 +12,17 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         array $_locks   : locked values
         array $_types   : values types
     */
-    private $_values    = array();
-    private $_locks     = array();
-    private $_types     = array();
+    protected $_values  = array();
+    protected $_locks   = array();
+    protected $_types   = array();
+    
+    public function __construct(array $values=array()){
+        if($values){
+            foreach($values as $key=>$value){
+                $this->offsetSet($key,$value);
+            }
+        }
+    }
     
     /*
         Lock a value to prevent overwrites
@@ -144,6 +152,9 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
             if(!$ok){
                 throw new Exception("'$key' value doesn't match predefined types");
             }
+        }
+        if(is_array($value)){
+            $value=new self($value);
         }
         $this->_values[$key]=$value;
     }
