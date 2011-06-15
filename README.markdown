@@ -5,8 +5,19 @@ Chernozem is an advanced dependency injection container originally based on Pimp
 
 For basic documentation and fundamentals comprehension, please take a look at https://github.com/fabpot/pimple
 
-Multidimensionnal support
--------------------------
+Differences from Pimple
+-----------------------
+
+- `share()` method was renamed to `persist()`
+- `protect()` method was renamed to `integrate()`
+- multimensionnal arrays support
+- iteration support with foreach
+- can lock variables to prevent future writing accesses
+- type-hinting support to prevent bad values
+- complete serialization
+
+Multidimensionnal arrays
+------------------------
 
     $container=new Chernozem;
     $container['fruits']=new array(
