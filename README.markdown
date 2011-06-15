@@ -1,9 +1,9 @@
-Chernozem
-=========
+Chernozem 0.1.1
+===============
 
 Chernozem is an advanced dependency injection container originally based on Pimple.
 
-For basic documentation and fundamentals comprehension, please take a look to https://github.com/fabpot/pimple
+For basic documentation and fundamentals comprehension, please take a look at https://github.com/fabpot/pimple
 
 Multidimensionnal support
 -------------------------
@@ -39,7 +39,7 @@ Type-hinting
     // Will throw an exception
     $container['fruits']=true;
 
-Here the valid types:
+Here's the valid types:
 
 - int
 - integer

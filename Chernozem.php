@@ -3,7 +3,10 @@
 /*
     An advanced dependency injection container inspired from Pimple
     
-    Author: Aurélien Delogu <dev@dreamysource.fr>
+    Version : 0.1.1
+    Author  : Aurélien Delogu <dev@dreamysource.fr>
+    URL     : https://github.com/pyrsmk/Chernozem
+    License : MIT
 */
 class Chernozem implements ArrayAccess, Iterator, Serializable{
     
