@@ -36,9 +36,11 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     /*
         Declare a value to specific types
         
-        string $key : a value's key
+        string $key             : a value's key
+        array, string $types    : variable types
     */
-    public function hint($key,array $types){
+    public function hint($key,$types){
+        $types=(array)$types;
         $this->_types[(string)$key]=$types;
     }
     
