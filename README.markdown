@@ -1,5 +1,5 @@
-Chernozem 0.2
-=============
+Chernozem 0.2.1
+===============
 
 Chernozem is an advanced dependency injection container originally based on Pimple.
 
@@ -110,4 +110,4 @@ Setter/getter
 Serialization
 -------------
 
-By default, closures cannot be serialized. Since Chernozem is a raw material, we've chosen to implement it. But, in order to use serialization, you __must__ include the functions.php file, which contains the serialize functions for closures. 
+By default, closures cannot be serialized. Since Chernozem is a raw material, we've chosen to implement it. But, in order to use serialization, you __must__ include the serialize.php file, which contains the serialize functions for closures. This file is hosted at https://github.com/pyrsmk/LumyFunctions. 
