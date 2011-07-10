@@ -34,17 +34,17 @@ $suite->test('Dependency injection',5,function() use ($suite){
     $chernozem->lock('test');
     try{
         $chernozem['test']=72;
-        $suite->check('Cannot set',true);
+        $suite->check('Cannot set',false);
     }
     catch(Exception $e){
-        $suite->check('Cannot set',false);
+        $suite->check('Cannot set',true);
     }
     try{
         unset($chernozem['test']);
-        $suite->check('Cannot unset',true);
+        $suite->check('Cannot unset',false);
     }
     catch(Exception $e){
-        $suite->check('Cannot unset',false);
+        $suite->check('Cannot unset',true);
     }
 })
 
@@ -125,19 +125,46 @@ $suite->test('Dependency injection',5,function() use ($suite){
     }
 })
 
-->test('Serialization',4,function() use ($suite){
+->test('Serialization',7,function() use ($suite){
     $chernozem=new Chernozem;
-    $chernozem['test1']=function(){return 33;};
-    $chernozem['test2']=function(){return 33;};
+    $chernozem['test1']=function(){return 72;};
+    $chernozem['test2']=72;
     $chernozem->lock('test2');
-    $chernozem['test3']=$chernozem->persist(function(){return microtime();});
-    $chernozem['test4']=$chernozem->integrate(function(){});
+    $chernozem['test3']=72;
+    $chernozem->hint('test3','int');
+    $chernozem['test4']=function(){return microtime();};
+    $chernozem->persist('test4');
+    $chernozem['test5']=function(){};
+    $chernozem->integrate('test5');
+    $chernozem->setter('test6',function($value){
+        return ucfirst($value);
+    });
+    $chernozem['test7']='test7';
+    $chernozem->getter('test7',function($value){
+        return ucfirst($value);
+    });
     $chernozem=unserialize(serialize($chernozem));
-    $suite->check('Closure',$chernozem['test1']==33);
-    $suite->check('Locked',$chernozem['test2']==33);
-    $microtime=$chernozem['test3'];
-    $suite->check('Persistent',$chernozem['test3']==$microtime);
-    $suite->check('Integrated',$chernozem['test4'] instanceof Closure);
+    $suite->check('Closure',$chernozem['test1']==72);
+    try{
+        $chernozem['test2']=72;
+        $suite->check('Locked',false);
+    }
+    catch(Exception $e){
+        $suite->check('Locked',true);
+    }
+    try{
+        $chernozem['test3']='foobar';
+        $suite->check('Type-hinted',false);
+    }
+    catch(Exception $e){
+        $suite->check('Type-hinted',true);
+    }
+    $microtime=$chernozem['test4'];
+    $suite->check('Persistent',$chernozem['test4']==$microtime);
+    $suite->check('Integrated',$chernozem['test5'] instanceof Closure);
+    $chernozem['test6']='test6';
+    $suite->check('Setter',$chernozem['test6']=='Test6');
+    $suite->check('Getter',$chernozem['test7']=='Test7');
 })
 
 ->run();

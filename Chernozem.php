@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container inspired from Pimple
     
-    Version : 0.2
+    Version : 0.2.1
     Author  : Aurélien Delogu <dev@dreamysource.fr>
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -14,8 +14,8 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         array $_values  : injected values
         array $_locks   : locked values
         array $_types   : value types
-        array $_setters : value setters
-        array $_getters : value getters
+        array $_setters : setters for values
+        array $_getters : getters for values
     */
     protected $_values  = array();
     protected $_locks   = array();
@@ -39,37 +39,46 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     /*
         Lock a value to prevent overwrites
         
-        string $key : a value's key
+        string, int $key    : a value's key
         
-        Return      : Chernozem
+        Return              : Chernozem
     */
     public function lock($key){
-        $this->_locks[]=(string)$key;
+        if(!is_string($key) and !is_int($key)){
+            throw new Exception("The provided key must be a string or an integer");
+        }
+        $this->_locks[]=$key;
         return $this;
     }
     
     /*
         Declare a value to specific types
         
-        string $key             : a value's key
+        string, int $key        : a value's key
         array, string $types    : variable types
         
         Return                  : Chernozem
     */
     public function hint($key,$types){
+        if(!is_string($key) and !is_int($key)){
+            throw new Exception("The provided key must be a string or an integer");
+        }
         $types=(array)$types;
-        $this->_types[(string)$key]=$types;
+        $this->_types[$key]=$types;
         return $this;
     }
     
     /*
         Set the object result of a closure to be persistent
         
-        string $key : a value's key
+        string, int $key    : a value's key
         
-        Return      : Chernozem
+        Return              : Chernozem
     */
     public function persist($key){
+        if(!is_string($key) and !is_int($key)){
+            throw new Exception("The provided key must be a string or an integer");
+        }
         if(($closure=$this->_values[$key]) instanceof Closure){
             $this->_values[$key]=function($chernozem) use ($closure){
                 static $value;
@@ -85,11 +94,14 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     /*
         Prevent a closure to be executed
         
-        string $key : a value's key
+        string, int $key : a value's key
         
         Return      : Chernozem
     */
     public function integrate($key){
+        if(!is_string($key) and !is_int($key)){
+            throw new Exception("The provided key must be a string or an integer");
+        }
         if(($closure=$this->_values[$key]) instanceof Closure){
             $this->_values[$key]=function($chernozem) use ($closure){
                 return $closure;
@@ -101,26 +113,32 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     /*
         Surchage the setter
         
-        string $key         : a value's key
+        string, int $key    : a value's key
         Closure $closure    : the closure
         
         Return              : Chernozem
     */
     public function setter($key,Closure $closure){
-        $this->_setters[(string)$key]=$closure;
+        if(!is_string($key) and !is_int($key)){
+            throw new Exception("The provided key must be a string or an integer");
+        }
+        $this->_setters[$key]=$closure;
         return $this;
     }
     
     /*
         Overload the getter
         
-        string $key         : a value's key
+        string, int $key    : a value's key
         Closure $closure    : the closure
         
         Return              : Chernozem
     */
     public function getter($key,Closure $closure){
-        $this->_getters[(string)$key]=$closure;
+        if(!is_string($key) and !is_int($key)){
+            throw new Exception("The provided key must be a string or an integer");
+        }
+        $this->_getters[$key]=$closure;
         return $this;
     }
     
@@ -136,26 +154,26 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     /*
         Verify if the key exists
         
-        string $key : the key
+        string, int $key    : the key
         
-        Return      : boolean
+        Return              : boolean
     */
     public function offsetExists($key){
-        return array_key_exists((string)$key,$this->_values);
+        return array_key_exists($key,$this->_values);
     }
     
     /*
         Set a value
         
-        string $key     : the key
-        mixed $value    : the value
+        string, int $key    : the key
+        mixed $value        : the value
     */
     public function offsetSet($key,$value){
         // Verify
         if(!$key and $key!==0){
             throw new Exception("Expects a non empty key");
         }
-        if(array_search($key,$this->_locks)){
+        if(in_array($key,$this->_locks)){
             throw new Exception("'$key' value is locked");
         }
         // Verify the type
@@ -231,12 +249,12 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     /*
         Return a value
         
-        string $key : the key
+        string, int $key    : the key
         
-        Return      : mixed
+        Return              : mixed
     */
     public function offsetGet($key){
-        $value=$this->_values[(string)$key];
+        $value=$this->_values[$key];
         // Execute the getter
         if($getter=$this->_getters[$key]){
             $value=$getter($value);
@@ -252,11 +270,10 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     /*
         Unset a value
         
-        string $key: the key
+        string, int $key: the key
     */
     public function offsetUnset($key){
-        $key=(string)$key;
-        if(array_search($key,$this->_locks)){
+        if(in_array($key,$this->_locks)){
             throw new Exception("'$key' value is locked");
         }
         unset($this->_values[$key]);
@@ -309,15 +326,23 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         Return: string
     */
     public function serialize(){
-        foreach($this->_values as $key=>$value){
-            if($value instanceof Closure){
-                $values[$key]=serialize_closure($value);
+        // Prepare data
+        $data=array($this->_locks,$this->_types);
+        // Serialize closures
+        foreach(array($this->_values,$this->_setters,$this->_getters) as $array){
+            $values=array();
+            foreach($array as $key=>$value){
+                if($value instanceof Closure){
+                    $values[$key]=serialize_closure($value);
+                }
+                else{
+                    $values[$key]=$value;
+                }
             }
-            else{
-                $values[$key]=$value;
-            }
+            $data[]=$values;
         }
-        return serialize($values);
+        // Final serialization
+        return serialize($data);
     }
     
     /*
@@ -326,14 +351,31 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         string $serialized: serialized data
     */
     public function unserialize($serialized){
-        foreach(unserialize($serialized) as $key=>$value){
-            if(($closure=@unserialize_closure($value)) instanceof Closure){
-                $this->_values[$key]=$closure;
+        // Unserialize data
+        $data=unserialize($serialized);
+        // Unserialize closures
+        $unserialize_closures=function($array){
+            foreach($array as $key=>$value){
+                if(($closure=@unserialize_closure($value)) instanceof Closure){
+                    $values[$key]=$closure;
+                }
+                else{
+                    $values[$key]=$value;
+                }
             }
-            else{
-                $this->_values[$key]=$value;
-            }
-        }
+            return $values;
+        };
+        $data[2]=$unserialize_closures($data[2]);
+        $data[3]=$unserialize_closures($data[3]);
+        $data[4]=$unserialize_closures($data[4]);
+        // Dump final data
+        list(
+            $this->_locks,
+            $this->_types,
+            $this->_values,
+            $this->_setters,
+            $this->_getters
+        )=$data;
     }
     
 }

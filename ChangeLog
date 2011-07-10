@@ -1,4 +1,10 @@
-0.2 - 10/07/11
+0.2.1 [2011.07.10]
+
+* fix bad serialization issues
+* add full string/integer key support
+* fix locking support
+
+0.2 [2011.07.10]
 
 * integrate() and persist() normalization
 * add setter/getter support

@@ -17,6 +17,26 @@ Differences from Pimple
 - setter/getter support
 - complete serialization
 
+Persistence
+-----------
+
+    $container=new Chernozem;
+    $container['timestamp']=microtime();
+    $container->persist('timestamp');
+    // Print the same timestamp twice
+    echo $container['timestamp'],"<br>",$container['timestamp'];
+
+Integration
+-----------
+
+    $container=new Chernozem;
+    $container['closure']=function(){return 'hop!';};
+    // The value is a string
+    var_dump($container['closure']);
+    // The value is the primitive closure
+    $container->persist('closure');
+    var_dump($container['closure']);
+
 Multidimensionnal arrays
 ------------------------
 
