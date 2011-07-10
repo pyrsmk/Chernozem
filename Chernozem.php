@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container inspired from Pimple
     
-    Version : 0.1.1
+    Version : 0.2
     Author  : Aurélien Delogu <dev@dreamysource.fr>
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -13,12 +13,21 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     /*
         array $_values  : injected values
         array $_locks   : locked values
-        array $_types   : values types
+        array $_types   : value types
+        array $_setters : value setters
+        array $_getters : value getters
     */
     protected $_values  = array();
     protected $_locks   = array();
     protected $_types   = array();
+    protected $_setters = array();
+    protected $_getters = array();
     
+    /*
+        Constructor
+        
+        array $values: a value list to fill in the container
+    */
     public function __construct(array $values=array()){
         if($values){
             foreach($values as $key=>$value){
@@ -31,9 +40,12 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         Lock a value to prevent overwrites
         
         string $key : a value's key
+        
+        Return      : Chernozem
     */
     public function lock($key){
         $this->_locks[]=(string)$key;
+        return $this;
     }
     
     /*
@@ -41,40 +53,84 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         
         string $key             : a value's key
         array, string $types    : variable types
+        
+        Return                  : Chernozem
     */
     public function hint($key,$types){
         $types=(array)$types;
         $this->_types[(string)$key]=$types;
+        return $this;
     }
     
     /*
         Set the object result of a closure to be persistent
         
-        Closure $closure    : the closure
+        string $key : a value's key
         
-        Return              : Closure
+        Return      : Chernozem
     */
-    public function persist(\Closure $closure){
-        return function($chernozem) use ($closure){
-            static $value;
-            if($value===null){
-                $value=$closure($chernozem);
-            }
-            return $value;
-        };
+    public function persist($key){
+        if(($closure=$this->_values[$key]) instanceof Closure){
+            $this->_values[$key]=function($chernozem) use ($closure){
+                static $value;
+                if($value===null){
+                    $value=$closure($chernozem);
+                }
+                return $value;
+            };
+        }
+        return $this;
     }
     
     /*
-        Prevent a closure to be interpreted as a service
+        Prevent a closure to be executed
         
+        string $key : a value's key
+        
+        Return      : Chernozem
+    */
+    public function integrate($key){
+        if(($closure=$this->_values[$key]) instanceof Closure){
+            $this->_values[$key]=function($chernozem) use ($closure){
+                return $closure;
+            };
+        }
+        return $this;
+    }
+    
+    /*
+        Surchage the setter
+        
+        string $key         : a value's key
         Closure $closure    : the closure
         
-        Return              : Closure
+        Return              : Chernozem
     */
-    public function integrate(\Closure $closure){
-        return function($chernozem) use ($closure){
-            return $closure;
-        };
+    public function setter($key,Closure $closure){
+        $this->_setters[(string)$key]=$closure;
+        return $this;
+    }
+    
+    /*
+        Overload the getter
+        
+        string $key         : a value's key
+        Closure $closure    : the closure
+        
+        Return              : Chernozem
+    */
+    public function getter($key,Closure $closure){
+        $this->_getters[(string)$key]=$closure;
+        return $this;
+    }
+    
+    /*
+        Return the value list
+        
+        Return: array
+    */
+    public function toArray(){
+        return $this->_values;
     }
     
     /*
@@ -95,13 +151,14 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         mixed $value    : the value
     */
     public function offsetSet($key,$value){
-        $key=(string)$key;
-        if(!$key){
+        // Verify
+        if(!$key and $key!==0){
             throw new Exception("Expects a non empty key");
         }
         if(array_search($key,$this->_locks)){
             throw new Exception("'$key' value is locked");
         }
+        // Verify the type
         if($this->_types[$key]){
             $ok=false;
             foreach($this->_types[$key] as $type){
@@ -147,6 +204,7 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
                     }
                 }
                 else{
+                    // Real object
                     if(!($value instanceof $type)){
                         $ok=true;
                        break; 
@@ -158,9 +216,15 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
                 throw new Exception("'$key' value doesn't match predefined types");
             }
         }
+        // Create a new Chernozem object for that array
         if(is_array($value)){
             $value=new self($value);
         }
+        // Execute the setter
+        if($setter=$this->_setters[$key]){
+            $value=$setter($value);
+        }
+        // Register the value
         $this->_values[$key]=$value;
     }
     
@@ -173,9 +237,15 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     */
     public function offsetGet($key){
         $value=$this->_values[(string)$key];
-        if($value instanceof \Closure){
+        // Execute the getter
+        if($getter=$this->_getters[$key]){
+            $value=$getter($value);
+        }
+        // Execute the closure...
+        if($value instanceof Closure){
             return $value($this);
         }
+        // ...Or return the value
         return $value;
     }
     
@@ -240,7 +310,7 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     */
     public function serialize(){
         foreach($this->_values as $key=>$value){
-            if($value instanceof \Closure){
+            if($value instanceof Closure){
                 $values[$key]=serialize_closure($value);
             }
             else{

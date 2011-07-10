@@ -5,12 +5,12 @@ error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
 require(__DIR__.'/Suite.php');
 require(__DIR__.'/Cli.php');
 
+require(__DIR__.'/../serialize.php');
 require(__DIR__.'/../Chernozem.php');
-require(__DIR__.'/../functions.php');
 
 $suite=new Lumy\Unit\Suite\Cli('Chernozem');
 
-$suite->test('Injection',5,function() use ($suite){
+$suite->test('Dependency injection',5,function() use ($suite){
     $chernozem=new Chernozem;
     try{
         $chernozem['']=33;
@@ -89,16 +89,26 @@ $suite->test('Injection',5,function() use ($suite){
 
 ->test('Persistent value',1,function() use ($suite){
     $chernozem=new Chernozem;
-    $chernozem['test']=$chernozem->persist(function(){return microtime();});
-    $a=$chernozem['test'];
-    $b=$chernozem['test'];
-    $suite->check('Same microtime value',$a==$b);
+    $chernozem['test']=function(){return microtime();};
+    $chernozem->persist('test');
+    $suite->check('Same microtime value',$chernozem['test']==$chernozem['test']);
 })
 
 ->test('Integrated value',1,function() use ($suite){
     $chernozem=new Chernozem;
-    $chernozem['test']=$chernozem->integrate(function(){});
+    $chernozem['test']=function(){};
+    $chernozem->integrate('test');
     $suite->check('Is a closure',$chernozem['test'] instanceof Closure);
+})
+
+->test('Setter/getter',2,function() use ($suite){
+    $chernozem=new Chernozem;
+    $chernozem['test']=function(){};
+    $chernozem->integrate('test');
+    $chernozem->setter('test',function($value){return $value;});
+    $suite->check('Is a closure',$chernozem['test'] instanceof Closure);
+    $chernozem->getter('test',function($value){return 72;});
+    $suite->check('Is equal to 72',$chernozem['test']==72);
 })
 
 ->test('Iteration',10,function() use ($suite){

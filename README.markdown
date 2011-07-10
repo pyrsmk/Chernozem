@@ -1,5 +1,5 @@
-Chernozem 0.1.1
-===============
+Chernozem 0.2
+=============
 
 Chernozem is an advanced dependency injection container originally based on Pimple.
 
@@ -14,6 +14,7 @@ Differences from Pimple
 - iteration support with foreach
 - can lock variables to prevent future writing accesses
 - type-hinting support to prevent bad values
+- setter/getter support
 - complete serialization
 
 Multidimensionnal arrays
@@ -71,6 +72,20 @@ Here's the valid types:
 It can handles object names too:
 
     $container->hint('fruits','My\Own\Object');
+
+Setter/getter
+-------------
+
+    $container->setter('fruits',function($value){
+        if($value=='strawberry'){
+            $value='STRAWBERRY';
+        }
+        return $value;
+    });
+
+    $container->getter('fruits',function($value){
+        return strtoupper($value);
+    });
 
 Serialization
 -------------
