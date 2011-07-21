@@ -1,13 +1,6 @@
-0.2.4 [2011.07.21]
-
-* fix fix unserialization
-
-0.2.3 [2011.07.21]
+0.2.5 [2011.07.21]
 
 * fix serialization
-
-0.2.2 [2011.07.21]
-
 * fix unserialization
 * link unit testing with Lumy\Unit
 
