@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container inspired from Pimple
     
-    Version : 0.2.3
+    Version : 0.2.4
     Author  : Aurélien Delogu <dev@dreamysource.fr>
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -356,7 +356,7 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         // Unserialize closures
         $unserialize=function($array){
             foreach($array as $key=>$value){
-                if(strpos($closure,':"function(')!==false){
+                if(strpos($value,':"function(')!==false){
                     $values[$key]=unserialize_closure($value);
                 }
                 else{

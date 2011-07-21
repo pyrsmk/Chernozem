@@ -1,4 +1,4 @@
-Chernozem 0.2.3
+Chernozem 0.2.4
 ===============
 
 Chernozem is an advanced dependency injection container originally based on Pimple.
