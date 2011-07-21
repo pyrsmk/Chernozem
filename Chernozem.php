@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container inspired from Pimple
     
-    Version : 0.2.1
+    Version : 0.2.3
     Author  : Aurélien Delogu <dev@dreamysource.fr>
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -327,11 +327,11 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     */
     public function serialize(){
         // Prepare data
-        $data=array($this->_locks,$this->_types);
+        $data=get_object_vars($this);
         // Serialize closures
-        foreach(array($this->_values,$this->_setters,$this->_getters) as $array){
+        foreach(array('_values','_setters','_getters') as $name){
             $values=array();
-            foreach($array as $key=>$value){
+            foreach($data[$name] as $key=>$value){
                 if($value instanceof Closure){
                     $values[$key]=serialize_closure($value);
                 }
@@ -339,7 +339,7 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
                     $values[$key]=$value;
                 }
             }
-            $data[]=$values;
+            $data[$name]=$values;
         }
         // Final serialization
         return serialize($data);
@@ -365,17 +365,13 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
             }
             return $values;
         };
-        $data[2]=$unserialize($data[2]);
-        $data[3]=$unserialize($data[3]);
-        $data[4]=$unserialize($data[4]);
+        $data['_values']=$unserialize($data['_values']);
+        $data['_setters']=$unserialize($data['_setters']);
+        $data['_getters']=$unserialize($data['_getters']);
         // Dump final data
-        list(
-            $this->_locks,
-            $this->_types,
-            $this->_values,
-            $this->_setters,
-            $this->_getters
-        )=$data;
+        foreach($data as $name=>$value){
+            $this->$name=$value;
+        }
     }
     
 }
