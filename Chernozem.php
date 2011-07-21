@@ -354,10 +354,10 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         // Unserialize data
         $data=unserialize($serialized);
         // Unserialize closures
-        $unserialize_closures=function($array){
+        $unserialize=function($array){
             foreach($array as $key=>$value){
-                if(($closure=@unserialize_closure($value)) instanceof Closure){
-                    $values[$key]=$closure;
+                if(strpos($closure,':"function(')!==false){
+                    $values[$key]=unserialize_closure($value);
                 }
                 else{
                     $values[$key]=$value;
@@ -365,9 +365,9 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
             }
             return $values;
         };
-        $data[2]=$unserialize_closures($data[2]);
-        $data[3]=$unserialize_closures($data[3]);
-        $data[4]=$unserialize_closures($data[4]);
+        $data[2]=$unserialize($data[2]);
+        $data[3]=$unserialize($data[3]);
+        $data[4]=$unserialize($data[4]);
         // Dump final data
         list(
             $this->_locks,

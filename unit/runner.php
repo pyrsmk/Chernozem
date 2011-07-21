@@ -2,8 +2,8 @@
 
 error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
 
-require(__DIR__.'/Suite.php');
-require(__DIR__.'/Cli.php');
+require(__DIR__.'/Unit/Suite.php');
+require(__DIR__.'/Unit/Suite/Cli.php');
 
 require(__DIR__.'/../serialize.php');
 require(__DIR__.'/../Chernozem.php');
