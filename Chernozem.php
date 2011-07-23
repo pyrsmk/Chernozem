@@ -323,7 +323,7 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         Reset the internal pointer of the container
     */
     public function rewind(){
-        rewind($this->__values);
+        reset($this->__values);
     }
     
     /*

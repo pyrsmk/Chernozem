@@ -1,3 +1,7 @@
+0.3.1 [2011.07.23]
+
+* fix rewind() bug
+
 0.3.0 [2011.07.23]
 
 * remove integrate() method
