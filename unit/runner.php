@@ -24,8 +24,8 @@ $suite->test('Dependency injection',5,function() use ($suite){
     $suite->check('Isset',isset($chernozem['test']));
     unset($chernozem['test']);
     $suite->check('Unset',!isset($chernozem['test']));
-    $chernozem['test']=function(){return 33;};
-    $suite->check('Closures',$chernozem['test']==33);
+    $chernozem['test']=function(){};
+    $suite->check('Closures',$chernozem['test'] instanceof Closure);
 })
 
 ->test('Locked value',2,function() use ($suite){
@@ -87,24 +87,24 @@ $suite->test('Dependency injection',5,function() use ($suite){
     }
 })
 
-->test('Persistent value',1,function() use ($suite){
+->test('Service',1,function() use ($suite){
     $chernozem=new Chernozem;
-    $chernozem['test']=function(){return microtime();};
-    $chernozem->persist('test');
-    $suite->check('Same microtime value',$chernozem['test']==$chernozem['test']);
+    $chernozem['test']=function(){return 72;};
+    $chernozem->service('test');
+    $suite->check('Return 72',$chernozem['test']==72);
 })
 
-->test('Integrated value',1,function() use ($suite){
+->test('Persistent service',1,function() use ($suite){
     $chernozem=new Chernozem;
-    $chernozem['test']=function(){};
-    $chernozem->integrate('test');
-    $suite->check('Is a closure',$chernozem['test'] instanceof Closure);
+    $chernozem['test']=function(){return microtime();};
+    $chernozem->service('test');
+    $chernozem->persist('test');
+    $suite->check('Same microtime value',$chernozem['test']==$chernozem['test']);
 })
 
 ->test('Setter/getter',2,function() use ($suite){
     $chernozem=new Chernozem;
     $chernozem['test']=function(){};
-    $chernozem->integrate('test');
     $chernozem->setter('test',function($value){return $value;});
     $suite->check('Is a closure',$chernozem['test'] instanceof Closure);
     $chernozem->getter('test',function($value){return 72;});
@@ -126,16 +126,18 @@ $suite->test('Dependency injection',5,function() use ($suite){
 })
 
 ->test('Serialization',7,function() use ($suite){
+    // Prepare tests
     $chernozem=new Chernozem;
-    $chernozem['test1']=function(){return 72;};
+    $chernozem['test1']=function(){};
     $chernozem['test2']=72;
     $chernozem->lock('test2');
     $chernozem['test3']=72;
     $chernozem->hint('test3','int');
-    $chernozem['test4']=function(){return microtime();};
-    $chernozem->persist('test4');
-    $chernozem['test5']=function(){};
-    $chernozem->integrate('test5');
+    $chernozem['test4']=function(){return 72;};
+    $chernozem->service('test4');
+    $chernozem['test5']=function(){return microtime();};
+    $chernozem->service('test5');
+    $chernozem->persist('test5');
     $chernozem->setter('test6',function($value){
         return ucfirst($value);
     });
@@ -144,7 +146,8 @@ $suite->test('Dependency injection',5,function() use ($suite){
         return ucfirst($value);
     });
     $chernozem=unserialize(serialize($chernozem));
-    $suite->check('Closure',$chernozem['test1']==72);
+    // Tests
+    $suite->check('Closure',$chernozem['test1'] instanceof Closure);
     try{
         $chernozem['test2']=72;
         $suite->check('Locked',false);
@@ -159,12 +162,19 @@ $suite->test('Dependency injection',5,function() use ($suite){
     catch(Exception $e){
         $suite->check('Type-hinted',true);
     }
-    $microtime=$chernozem['test4'];
-    $suite->check('Persistent',$chernozem['test4']==$microtime);
-    $suite->check('Integrated',$chernozem['test5'] instanceof Closure);
+    $suite->check('Service',$chernozem['test4']==72);
+    $suite->check('Persistent service',$chernozem['test5']==$chernozem['test5']);
     $chernozem['test6']='test6';
     $suite->check('Setter',$chernozem['test6']=='Test6');
     $suite->check('Getter',$chernozem['test7']=='Test7');
+})
+
+->test('toArray',2,function() use ($suite){
+    $chernozem=new Chernozem;
+    $chernozem['array']=array();
+    $array=$chernozem->toArray();
+    $suite->check('Valid array',is_array($array));
+    $suite->check('Valid recursive array',is_array($array['array']));
 })
 
 ->run();

@@ -1,3 +1,10 @@
+0.3.0 [2011.07.23]
+
+* remove integrate() method
+* add service() method
+* normalize properties to not pollute children
+* improve toArray() method
+
 0.2.5 [2011.07.21]
 
 * fix serialization
