@@ -28,63 +28,14 @@ $suite->test('Dependency injection',5,function() use ($suite){
     $suite->check('Closures',$chernozem['test'] instanceof Closure);
 })
 
-->test('Locked value',2,function() use ($suite){
+->test('Filter',2,function() use ($suite){
     $chernozem=new Chernozem;
-    $chernozem['test']=function(){return 33;};
-    $chernozem->lock('test');
-    try{
-        $chernozem['test']=72;
-        $suite->check('Cannot set',false);
-    }
-    catch(Exception $e){
-        $suite->check('Cannot set',true);
-    }
-    try{
-        unset($chernozem['test']);
-        $suite->check('Cannot unset',false);
-    }
-    catch(Exception $e){
-        $suite->check('Cannot unset',true);
-    }
-})
-
-->test('Type-hinting',16,function() use ($suite){
-    $chernozem=new Chernozem;
-    $types=array(
-        'int'       => 33,
-        'integer'   => 33,
-        'long'      => 33,
-        'float'     => 5.5,
-        'double'    => 5.5,
-        'real'      => 5.5,
-        'numeric'   => '72',
-        'bool'      => true,
-        'boolean'   => false,
-        'string'    => 'pouet!',
-        'scalar'    => 72,
-        'array'     => array(72),
-        'object'    => new stdClass,
-        'resource'  => curl_init(),
-        'callable'  => function(){}
-    );
-    foreach($types as $type=>$value){
-        $chernozem->hint('test',array($type));
-        try{
-            $chernozem['test']=$value;
-            $suite->check("Of type $type",true);
-        }
-        catch(Exception $e){
-            $suite->check("Of type $type",false);
-        }
-    }
-    $chernozem->hint('test',array('Chernozem'));
-    try{
-        $chernozem['test']=$chernozem;
-        $suite->check("Instance of Chernozem",true);
-    }
-    catch(Exception $e){
-        $suite->check("Instance of Chernozem",false);
-    }
+    $chernozem->filter('test',function($value) use($suite){
+        $suite->check('Passed value',$value instanceof Closure);
+        return 72;
+    });
+    $chernozem['test']=function(){};
+    $suite->check('Equals to 72',$chernozem['test']==72);
 })
 
 ->test('Service',1,function() use ($suite){
@@ -92,23 +43,6 @@ $suite->test('Dependency injection',5,function() use ($suite){
     $chernozem['test']=function(){return 72;};
     $chernozem->service('test');
     $suite->check('Return 72',$chernozem['test']==72);
-})
-
-->test('Persistent service',1,function() use ($suite){
-    $chernozem=new Chernozem;
-    $chernozem['test']=function(){return microtime();};
-    $chernozem->service('test');
-    $chernozem->persist('test');
-    $suite->check('Same microtime value',$chernozem['test']==$chernozem['test']);
-})
-
-->test('Setter/getter',2,function() use ($suite){
-    $chernozem=new Chernozem;
-    $chernozem['test']=function(){};
-    $chernozem->setter('test',function($value){return $value;});
-    $suite->check('Is a closure',$chernozem['test'] instanceof Closure);
-    $chernozem->getter('test',function($value){return 72;});
-    $suite->check('Is equal to 72',$chernozem['test']==72);
 })
 
 ->test('Iteration',10,function() use ($suite){
@@ -125,48 +59,22 @@ $suite->test('Dependency injection',5,function() use ($suite){
     }
 })
 
-->test('Serialization',7,function() use ($suite){
+->test('Serialization',3,function() use ($suite){
     // Prepare tests
     $chernozem=new Chernozem;
-    $chernozem['test1']=function(){};
-    $chernozem['test2']=72;
-    $chernozem->lock('test2');
-    $chernozem['test3']=72;
-    $chernozem->hint('test3','int');
-    $chernozem['test4']=function(){return 72;};
-    $chernozem->service('test4');
-    $chernozem['test5']=function(){return microtime();};
-    $chernozem->service('test5');
-    $chernozem->persist('test5');
-    $chernozem->setter('test6',function($value){
+    $chernozem['basic']=function(){};
+    $chernozem['service']=function(){return 72;};
+    $chernozem->service('service');
+    $chernozem->filter('filter',function($value){
         return ucfirst($value);
     });
-    $chernozem['test7']='test7';
-    $chernozem->getter('test7',function($value){
-        return ucfirst($value);
-    });
+    $chernozem['filter']='test';
+    // (Un)serialize
     $chernozem=unserialize(serialize($chernozem));
     // Tests
-    $suite->check('Closure',$chernozem['test1'] instanceof Closure);
-    try{
-        $chernozem['test2']=72;
-        $suite->check('Locked',false);
-    }
-    catch(Exception $e){
-        $suite->check('Locked',true);
-    }
-    try{
-        $chernozem['test3']='foobar';
-        $suite->check('Type-hinted',false);
-    }
-    catch(Exception $e){
-        $suite->check('Type-hinted',true);
-    }
-    $suite->check('Service',$chernozem['test4']==72);
-    $suite->check('Persistent service',$chernozem['test5']==$chernozem['test5']);
-    $chernozem['test6']='test6';
-    $suite->check('Setter',$chernozem['test6']=='Test6');
-    $suite->check('Getter',$chernozem['test7']=='Test7');
+    $suite->check('Closure',$chernozem['basic'] instanceof Closure);
+    $suite->check('Service',$chernozem['service']==72);
+    $suite->check('Filter',$chernozem['filter']=='Test');
 })
 
 ->test('toArray',2,function() use ($suite){

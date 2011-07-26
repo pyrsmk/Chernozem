@@ -1,5 +1,5 @@
-Chernozem 0.3.2
-===============
+Chernozem 4.0
+=============
 
 Chernozem is an advanced dependency injection container originally based on Pimple.
 
@@ -12,15 +12,14 @@ Differences from Pimple
 - closures are __not__ services by default
 - multimensionnal arrays support
 - iteration support with foreach
-- can lock variables to prevent future writing accesses
-- type-hinting support to prevent bad values
-- setter/getter support
 - complete serialization
+- filters support
 
 Important version remarks
 -------------------------
 
-- since 0.3.0, closures are not set as services by default
+- 0.3.0: closures are not longer set as services by default
+- 4.0: hinting, locking, setter and getter support was replaced by filters
 
 Service
 -------
@@ -34,20 +33,6 @@ A service is a closure that will be executed when retrieved.
     // The printed value is a string
     $container->service('closure');
     var_dump($container['closure']);
-
-Persistence
------------
-
-Persistence permit to closures to not return new values each time they're getted.
-
-    $container=new Chernozem;
-    $container['timestamp']=microtime();
-    // Persistent closures must be set as services before
-    $container->service('timestamp');
-    // Persistence
-    $container->persist('timestamp');
-    // Print the same timestamp twice
-    echo $container['timestamp'],"<br>",$container['timestamp'];
 
 Multidimensionnal arrays
 ------------------------
@@ -72,64 +57,27 @@ It's quite simple to iterate over your container:
         echo "$fruit : $color";
     }
 
-Writing lock
-------------
+Filters
+-------
 
-Forbid future value modifications:
+Filters are executed when a value is set. Here's what we can do with such a functionnality:
 
-    $container->lock('fruits');
-    // Will throw an exception
-    $container['fruits']=72;
+Type-hinting:
 
-Type-hinting
-------------
-
-Chernozem lets you type-hint the values that will be setted by the user, to get more consistent values anywhere in your code.
-
-    // Only accept integer and float types
-    $container->hint('fruits',array('int','float'));
-    // Will throw an exception
-    $container['fruits']=true;
-
-Here's the valid types:
-
-- int
-- integer
-- long
-- float
-- double
-- real
-- numeric
-- bool
-- boolean
-- string
-- scalar
-- array
-- object
-- resource
-- callable
-
-It can handles object names too:
-
-    $container->hint('fruits','My\Own\Object');
-
-Setter/getter
--------------
-
-If it's needed to format value before registration, you can add a setter for that value.
-
-    $container->setter('fruits',function($value){
-        if($value=='strawberry'){
-            $value='STRAWBERRY';
+    $container->filter('fruits',function($value){
+        if(!is_array($value)){
+            throw new Exception("Expected an array");
         }
         return $value;
     });
 
-The same, with getters:
+Locking:
 
-    $container->getter('fruits',function($value){
-        return strtoupper($value);
+    $container->filter('fruits',function($value) use($container){
+        return $container['fruits'];
     });
+
+As you can see, filters are very flexibles and can be used for many beahviors.
 
 Serialization
 -------------
