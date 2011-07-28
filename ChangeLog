@@ -1,3 +1,7 @@
+0.5.1 [2011.07.28]
+
+* fix non loop bug with zero index value
+
 0.5.0 [2011.07.28]
 
 * provide some built-in filters

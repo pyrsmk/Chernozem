@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container inspired from Pimple
     
-    Version : 0.5.0
+    Version : 0.5.1
     Author  : Aurélien Delogu <dev@dreamysource.fr>
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -200,7 +200,7 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
         Return: boolean
     */
     public function valid(){
-        return (bool)key($this->__values);
+        return key($this->__values)!==null;
     }
     
     /*
