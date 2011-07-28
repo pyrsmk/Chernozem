@@ -3,12 +3,12 @@
 /*
     An advanced dependency injection container inspired from Pimple
     
-    Version : 4.0
+    Version : 0.5.0
     Author  : Aurélien Delogu <dev@dreamysource.fr>
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
 */
-class Chernozem implements ArrayAccess, Iterator, Serializable{
+class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     
     /*
         array $__values     : injected values
@@ -47,7 +47,7 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         $this->__filters[$key]=$closure;
         return $this;
     }
-
+    
     /*
         Set a closure as a service
         
@@ -63,6 +63,19 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
             $this->__services[]=$key;
         }
         return $this;
+    }
+   
+    /*
+        Search a value in the container
+
+        Parameters
+            string $value           : the value to find
+
+        Return
+            boolean, int, string    : false if not found, otherwise the key
+    */
+    public function search($value){
+        return array_search($value,$this->__values,true);
     }
 
     /*
@@ -102,12 +115,15 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
     */
     public function offsetSet($key,$value){
         // Key verification
+        if($key===null){
+            $key=count($this->__values);
+        }
         if(!$key and $key!==0){
             throw new Exception("Expects a non empty key");
         }
         // Execute the filter
         if($filter=$this->__filters[$key]){
-            $value=$filter($value);
+            $value=$filter($key,$value);
         }
         // Create a new Chernozem object for that array
         if(is_array($value)){
@@ -238,6 +254,16 @@ class Chernozem implements ArrayAccess, Iterator, Serializable{
         foreach($data as $name=>$value){
             $this->$name=$value;
         }
+    }
+    
+    /*
+        Return the number of values in the container
+
+        Return
+            int
+    */
+    public function count(){
+        return count($this->__values);
     }
     
 }
