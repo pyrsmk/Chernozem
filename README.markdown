@@ -171,4 +171,4 @@ And your `foo` value will be locked. Just take a look at `filters.php` to know w
 Serialization
 -------------
 
-By default, closures cannot be serialized. Since Chernozem is a raw material, we've chosen to implement it. But, in order to use serialization, you __must__ include the serialize.php file, which contains the serialize functions for closures. This file is hosted at https://github.com/pyrsmk/LumyFunctions.
+By default, closures cannot be serialized. Since Chernozem is a raw material, we've chosen to implement it. But, in order to use serialization, you __must__ include the `serialize.php` file, which contains the serialization functions for closures. This file is hosted at https://github.com/pyrsmk/LumyFunctions.
