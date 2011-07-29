@@ -5,9 +5,9 @@ error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
 require(__DIR__.'/Unit/Suite.php');
 require(__DIR__.'/Unit/Suite/Cli.php');
 
-require(__DIR__.'/../serialize.php');
-require(__DIR__.'/../filters.php');
-require(__DIR__.'/../Chernozem.php');
+require(__DIR__.'/serialize.php');
+require(__DIR__.'/../lib/filters.php');
+require(__DIR__.'/../lib/Chernozem.php');
 
 $suite=new Lumy\Unit\Suite\Cli('Chernozem');
 

@@ -4,7 +4,7 @@
     An advanced dependency injection container inspired from Pimple
     
     Version : 0.5.1
-    Author  : Aurélien Delogu <dev@dreamysource.fr>
+    Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
 */
@@ -22,7 +22,8 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Constructor
         
-        array $values: a value list to fill in the container
+        Parameters
+            array $values: a value list to fill in the container
     */
     public function __construct(array $values=array()){
         if($values){
@@ -35,10 +36,12 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Set a filter for a value
         
-        string, int $key    : a value's key
-        Closure $closure    : the closure to run for that key
+        Parameters
+            string, int $key    : a value's key
+            Closure $closure    : the closure to run for that key
         
-        Return              : Chernozem
+        Return
+            Chernozem
     */
     public function filter($key,Closure $closure){
         if(!is_string($key) and !is_int($key)){
@@ -51,9 +54,11 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Set a closure as a service
         
-        string, int $key    : a value's key
+        Parameters
+            string, int $key: a value's key
         
-        Return              : Chernozem
+        Return
+            Chernozem
     */
     public function service($key){
         if(!is_string($key) and !is_int($key)){
@@ -81,7 +86,8 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Convert Chernozem to an array
         
-        Return: array
+        Return
+            array
     */
     public function toArray(){
         $data=array();
@@ -99,9 +105,11 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Verify if the key exists
         
-        string, int $key    : the key
+        Parameters
+            string, int $key: the key
         
-        Return              : boolean
+        Return
+            boolean
     */
     public function offsetExists($key){
         return array_key_exists($key,$this->__values);
@@ -110,8 +118,9 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Set a value
         
-        string, int $key    : the key
-        mixed $value        : the value
+        Parameters
+            string, int $key    : the key
+            mixed $value        : the value
     */
     public function offsetSet($key,$value){
         // Key verification
@@ -136,9 +145,11 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Return a value
         
-        string, int $key    : the key
+        Parameters
+            string, int $key: the key
         
-        Return              : mixed
+        Return
+            mixed
     */
     public function offsetGet($key){
         $value=$this->__values[$key];
@@ -153,7 +164,8 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Unset a value
         
-        string, int $key: the key
+        Parameters
+            string, int $key: the key
     */
     public function offsetUnset($key){
         if(in_array($key,$this->__locks)){
@@ -165,7 +177,8 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Return the current value of the container
         
-        Return: mixed
+        Return
+            mixed
     */
     public function current(){
         return current($this->__values);
@@ -174,7 +187,8 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Return the current key of the container
         
-        Return: string
+        Return
+            string
     */
     public function key(){
         return key($this->__values);
@@ -197,7 +211,8 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Verify if the current value is valid
         
-        Return: boolean
+        Return
+            boolean
     */
     public function valid(){
         return key($this->__values)!==null;
@@ -206,7 +221,8 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Serialize Chernozem
         
-        Return: string
+        Return
+            string
     */
     public function serialize(){
         // Prepare data
@@ -231,7 +247,8 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     /*
         Unserialize Chernozem
         
-        string $serialized: serialized data
+        Parameters
+            string $serialized: serialized data
     */
     public function unserialize($serialized){
         // Unserialize data

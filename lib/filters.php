@@ -5,8 +5,6 @@
 
     Author
         Aurélien Delogu (dev@dreamysource.fr)
-
-    TODO
 */
 
 /*
