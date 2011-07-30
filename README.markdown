@@ -91,6 +91,8 @@ Also, please notice that Chernozem will create a new itself instance for each re
 
     $container['foo']['bar']['baz']='fooz';
 
+Then, if you want to test an unset value in Chernozem, instead of try `$container['foo']['bar']===null` you will must do `$container['foo']['bar'] instanceof Chernozem` to check whether your value is set or not.
+
 Iteration
 ---------
 
