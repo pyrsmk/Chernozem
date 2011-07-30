@@ -1,4 +1,4 @@
-Chernozem 0.5.1
+Chernozem 0.5.2
 ===============
 
 Chernozem is an advanced dependency injection container originally based on Pimple (https://github.com/fabpot/pimple).
@@ -76,7 +76,7 @@ And search keys:
 Multidimensionnal arrays
 ------------------------
 
-Chernozem supports array chaining by creating a Chernozem for each arrays:
+Chernozem supports array chaining by creating a Chernozem instance for each arrays:
 
     $container=new Chernozem;
     $container['fruits']=new array(
@@ -86,6 +86,10 @@ Chernozem supports array chaining by creating a Chernozem for each arrays:
     );
     // Print 'red'
     echo $container['fruits']['strawberry'];
+
+Also, please notice that Chernozem will create a new itself instance for each retrieved `null` value to provide native multidimensional support as:
+
+    $container['foo']['bar']['baz']='fooz';
 
 Iteration
 ---------

@@ -1,3 +1,7 @@
+0.5.2 [2011.07.30]
+
+* tiny offsetGet() improvement for full multidimensional arrays support
+
 0.5.1 [2011.07.28]
 
 * fix non loop bug with zero index value
