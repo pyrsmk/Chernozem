@@ -18,9 +18,33 @@ global $chernozem_lock;
 $chernozem_lock=function($chernozem,$key){
     $chernozem->filter(
         $key,
-        function($key,$value){
+        $closure=function($key,$value){
             throw new Exception("'$key' value is locked");
-        }
+        },
+        $chernozem::FILTER_SET
+    );
+    $chernozem->filter(
+        $key,
+        $closure,
+        $chernozem::FILTER_UNSET
+    );
+};
+
+/*
+    Will execute the closure and return the result
+
+    Parameters
+        object $chernozem   : a Chernozem child object
+        int, string $key    : the key
+*/
+global $chernozem_service;
+$chernozem_service=function($chernozem,$key){
+    $chernozem->filter(
+        $key,
+        function($key,$value) use($chernozem){
+            return $value($chernozem);
+        },
+        $chernozem::FILTER_GET
     );
 };
 
@@ -46,7 +70,8 @@ $chernozem_persist=function($chernozem,$key){
                 };
             }
             return $closure;
-        }
+        },
+        $chernozem::FILTER_SET
     );
 };
 
@@ -66,7 +91,8 @@ $chernozem_integer=function($chernozem,$key){
                 throw new Exception("'$key' value is not an integer");
             }
             return $value;
-        }
+        },
+        $chernozem::FILTER_SET
     );
 };
 
@@ -86,7 +112,8 @@ $chernozem_float=function($chernozem,$key){
                 throw new Exception("'$key' value is not a float number");
             }
             return $value;
-        }
+        },
+        $chernozem::FILTER_SET
     );
 };
 
@@ -106,7 +133,8 @@ $chernozem_boolean=function($chernozem,$key){
                 throw new Exception("'$key' value is not a boolean value");
             }
             return $value;
-        }
+        },
+        $chernozem::FILTER_SET
     );
 };
 
@@ -126,7 +154,8 @@ $chernozem_string=function($chernozem,$key){
                 throw new Exception("'$key' value is not a string");
             }
             return $value;
-        }
+        },
+        $chernozem::FILTER_SET
     );
 };
 
@@ -146,7 +175,8 @@ $chernozem_numeric=function($chernozem,$key){
                 throw new Exception("'$key' value is not a numeric value");
             }
             return $value;
-        }
+        },
+        $chernozem::FILTER_SET
     );
 };
 
@@ -166,7 +196,8 @@ $chernozem_array=function($chernozem,$key){
                 throw new Exception("'$key' value is not an array");
             }
             return $value;
-        }
+        },
+        $chernozem::FILTER_SET
     );
 };
 
@@ -191,7 +222,8 @@ $chernozem_object=function($chernozem,$key,$type=null){
                 throw new Exception("'$key' value is not an object");
             }
             return $value;
-        }
+        },
+        $chernozem::FILTER_SET
     );
 };
 
@@ -211,7 +243,8 @@ $chernozem_callable=function($chernozem,$key){
                 throw new Exception("'$key' value is not callable");
             }
             return $value;
-        }
+        },
+        $chernozem::FILTER_SET
     );
 };
 
@@ -231,6 +264,7 @@ $chernozem_resource=function($chernozem,$key){
                 throw new Exception("'$key' value is not a resource");
             }
             return $value;
-        }
+        },
+        $chernozem::FILTER_SET
     );
 };

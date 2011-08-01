@@ -1,4 +1,4 @@
-Chernozem 0.5.2
+Chernozem 0.6.0
 ===============
 
 Chernozem is an advanced dependency injection container originally based on Pimple (https://github.com/fabpot/pimple).
@@ -19,6 +19,7 @@ Important version remarks
 
 - 0.3.0: closures are not longer set as services by default
 - 0.4.0: persistance, hinting, locking, setter and getter support was replaced by filters
+- 0.6.0: service() was dropped in favor of filter implementation
 
 What the hell is that?
 ----------------------
@@ -91,7 +92,7 @@ Also, please notice that Chernozem will create a new itself instance for each re
 
     $container['foo']['bar']['baz']='fooz';
 
-Then, if you want to test an unset value in Chernozem, instead of try `$container['foo']['bar']===null` you will must do `$container['foo']['bar'] instanceof Chernozem` to check whether your value is set or not. Moreover, even you've added an array to Chernozem, you'll must check it as a Chernozem object, neither an array.
+Then, if you want to test an unset value in Chernozem, instead of try `$container['foo']['bar']===null` you will must do `$container['foo']['bar'] instanceof Chernozem` to check whether your value is set or not. Moreover, even you've added an array to Chernozem, you'll must check it as a Chernozem object, either an array.
 
 Iteration
 ---------
@@ -109,70 +110,52 @@ Chernozem is also shipped with a complete `toArray()` conversion, all Chernozem 
 
     var_dump($container->toArray());
 
-Services
---------
-
-A service is a closure that will be executed when retrieved:
-
-    $container['closure']=function($chernozem){return $chernozem;};
-    // The printed value is a closure
-    var_dump($container['closure']);
-    // The printed value is the container itself
-    $container->service('closure');
-    var_dump($container['closure']);
-
-As you can see, Chernozem will pass its instance as parameter to your closure.
-
 Filters
 -------
 
-Filters make your life easier by extending Chernozem functionnalities for one value. Please keep in mind that they are executed when a value is set for performance purposes. Here's what we can do with them:
+Filters make your life easier by extending Chernozem setters, getters and unsetters. Here's what we can do with them:
 
 Type-hinting:
 
-    $container->filter('fruits',function($key,$value){
-        if(!is_array($value)){
-            throw new Exception("Expected an array");
-        }
-        return $value;
-    });
+    $container->filter(
+        'fruits',
+        function($key,$value){
+            if(!is_array($value)){
+                throw new Exception("Expected an array");
+            }
+            return $value;
+        },
+        // Not really needed since the default value is FILTER_SET
+        $container::FILTER_SET
+    );
 
 Locking:
 
-    $container->filter('fruits',function($key,$value) use($container){
-        return $container['fruits'];
-    });
-
-Persistence for services:
-
-    // Add persistence filter
-    $container->filter('foo',function($key,$closure){
-        if($closure instanceof Closure){
-            $closure=function($chernozem) use($closure){
-                static $persistent;
-                if($persistent===null){
-                    $persistent=$closure($chernozem);
-                }
-                return $persistent;
-            };
+    $container->filter(
+        'fruits',
+        function($key,$value) use($container){
+            return $container['fruits'];
         }
-        return $closure;
-    });
-    // Create the service
-    $container['foo']=function($chernozem){
-        return time();
-    };
-    $container->service('foo');
+    );
+    
+    $container->filter(
+        'fruits',
+        function($key,$value){
+            return false;
+        },
+        $container::FILTER_UNSET
+    );
 
-The service will always return the same time :
 
-As you can see, filters are very flexibles and can be used for many behaviors. Nevertheless, above examples are directly included to the Chernozem project into the `filters.php` file. To be able to use them into your projects, you can act as follow:
+As you can see, filters are very flexibles and can be used for many behaviors. As it was said above, there are only 3 filter types: `FILTER_SET`, `FILTER_GET` and `FILTER_UNSET`. Set and get filters work on the same way: a value, and its corresponding key, is passed and a value must be returned. For a set filter, the new value will overwrite the original one. For a get filter, it will just return the closure's returned value. Unset filters are a bit different: keys and values are well passed to the closure, but the returned value must be boolean. If the value is allowed to be removed, true must be returned, false otherwise.
+
+To save your time, Chernozem is shipped with many useful filters. To be able to use them into your projects, you can act as follow:
 
     include('Chernozem/filters.php');
     global $chernozem_lock;
     $chernozem_lock($container,'foo');
 
-And your `foo` value will be locked. Just take a look at `filters.php` to know what are the name and use of the built-in filters. But, be careful, you __can't__ add many filters for the same value.
+And your `foo` value will be locked. Just take a look at `filters.php` to know what are the name and use of the built-in filters. But, be careful, you __can't__ add many filters for the same filter type.
 
 Serialization
 -------------

@@ -1,6 +1,13 @@
+0.6.0 [2011.08.01]
+
+* add support for objects as key
+* drop service() method
+* add full filters support
+
 0.5.2 [2011.07.30]
 
 * tiny offsetGet() improvement for full multidimensional arrays support
+* __construct() now accepts Chernozem objects as parameter
 
 0.5.1 [2011.07.28]
 

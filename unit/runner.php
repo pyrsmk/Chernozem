@@ -12,46 +12,77 @@ require(__DIR__.'/../src/Chernozem.php');
 
 $suite=new Lumy\Unit\Suite\Cli('Chernozem');
 
-$suite->test('Basics',10,function() use ($suite){
+$suite->test('Basics',12,function() use ($suite){
+    // Constructor
     $chernozem=new Chernozem(array('test'=>'test'));
     $suite->check('Array passed to constructor',$chernozem['test']=='test');
-    $chernozem[]='test2';
-    $suite->check('Value added by $foo[]=$bar method',$chernozem[1]=='test2');
-    $suite->check('Search: string index',$chernozem->search('test')=='test');
-    $suite->check('Search: numeric index',$chernozem->search('test2')==1);
-    $suite->check('Count',count($chernozem)==2);
+    $chernozem=new Chernozem($chernozem);
+    $suite->check('Chernozem object passed to constructor',$chernozem['test']=='test');
+    // Set/get
     $chernozem=new Chernozem;
-    try{
-        $chernozem['']=33;
-        $suite->check("Can't set an empty key",false);
-    }
-    catch(Exception $e){
-        $suite->check("Can't set an empty key",true);
-    }
     $chernozem['test']=33;
     $suite->check('Set/get',$chernozem['test']==33);
+    try{
+        $chernozem['']=33;
+        $suite->check("Set/get: empty key",false);
+    }
+    catch(Exception $e){
+        $suite->check("Set/get: empty key",true);
+    }
+    $chernozem[]='test2';
+    $suite->check('Set/get: [] method',$chernozem[1]=='test2');
+    $chernozem[$chernozem]='bar';
+    $suite->check('Set/get: objects as key',$chernozem[$chernozem]=='bar');
+    $chernozem['test']=function(){};
+    $suite->check('Set/get: closures',$chernozem['test'] instanceof Closure);
+    // Isset/unset
     $suite->check('Isset',isset($chernozem['test']));
     unset($chernozem['test']);
     $suite->check('Unset',!isset($chernozem['test']));
-    $chernozem['test']=function(){};
-    $suite->check('Closures',$chernozem['test'] instanceof Closure);
+    // Other
+    $chernozem['test']='test';
+    $suite->check('Search: string index',$chernozem->search('test')=='test');
+    $suite->check('Search: numeric index',$chernozem->search('test2')==1);
+    $suite->check('Count',count($chernozem)==3);
 })
 
-->test('Filter',2,function() use ($suite){
+->test('Filters',9,function() use ($suite){
     $chernozem=new Chernozem;
-    $chernozem->filter('test',function($key,$value) use($suite){
-        $suite->check('Passed value',$value instanceof Closure);
-        return 72;
-    });
+    // FILTER_SET
+    $chernozem->filter(
+        'test',
+        function($key,$value) use($suite){
+            $suite->check('Set: key',$key=='test');
+            $suite->check('Set: value',$value instanceof Closure);
+            return 72;
+        },
+        $chernozem::FILTER_SET
+    );
     $chernozem['test']=function(){};
-    $suite->check('Equals to 72',$chernozem['test']==72);
-})
-
-->test('Service',1,function() use ($suite){
-    $chernozem=new Chernozem;
-    $chernozem['test']=function(){return 72;};
-    $chernozem->service('test');
-    $suite->check('Return 72',$chernozem['test']==72);
+    $suite->check('Set: equals to 72',$chernozem['test']==72);
+    // FILTER_GET
+    $chernozem->filter(
+        'test',
+        function($key,$value) use($suite){
+            $suite->check('Get: key',$key=='test');
+            $suite->check('Get: value',$value==72);
+            return $value;
+        },
+        $chernozem::FILTER_GET
+    );
+    $suite->check('Get: equals to 72',$chernozem['test']==72);
+    // FILTER_UNSET
+    $chernozem['test2']=72;
+    $chernozem->filter(
+        'test2',
+        function($key,$value) use($suite){
+            $suite->check('Unset: key',$key=='test2');
+            $suite->check('Unset: value',$value==72);
+        },
+        $chernozem::FILTER_UNSET
+    );
+    unset($chernozem['test2']);
+    $suite->check('Unset: still setted',$chernozem['test2']==72);
 })
 
 ->test('Iteration',10,function() use ($suite){
@@ -68,12 +99,10 @@ $suite->test('Basics',10,function() use ($suite){
     }
 })
 
-->test('Serialization',3,function() use ($suite){
+->test('Serialization',2,function() use ($suite){
     // Prepare tests
     $chernozem=new Chernozem;
     $chernozem['basic']=function(){};
-    $chernozem['service']=function(){return 72;};
-    $chernozem->service('service');
     $chernozem->filter('filter',function($key,$value){
         return ucfirst($value);
     });
@@ -81,9 +110,8 @@ $suite->test('Basics',10,function() use ($suite){
     // (Un)serialize
     $chernozem=unserialize(serialize($chernozem));
     // Tests
-    $suite->check('Closure',$chernozem['basic'] instanceof Closure);
-    $suite->check('Service',$chernozem['service']==72);
-    $suite->check('Filter',$chernozem['filter']=='Test');
+    $suite->check('Values',$chernozem['basic'] instanceof Closure);
+    $suite->check('Filters',$chernozem['filter']=='Test');
 })
 
 ->test('toArray',2,function() use ($suite){
@@ -94,18 +122,34 @@ $suite->test('Basics',10,function() use ($suite){
     $suite->check('Valid recursive array',is_array($array['array']));
 })
 
-->test('Built-in filters',22,function() use ($suite){
+->test('Built-in filters',24,function() use ($suite){
     // Lock
     $chernozem=new Chernozem(array('foo'=>'bar'));
     global $chernozem_lock;
     $chernozem_lock($chernozem,'foo');
     try{
         $chernozem['foo']='foobar';
-        $suite->check('Lock',false);
+        $suite->check('Lock: set',false);
     }
     catch(Exception $e){
-        $suite->check('Lock',true);
+        $suite->check('Lock: set',true);
     }
+    try{
+        unset($chernozem['foo']);
+        $suite->check('Lock: unset',false);
+    }
+    catch(Exception $e){
+        $suite->check('Lock: unset',true);
+    }
+    // Service
+    $chernozem=new Chernozem(array(
+        'foo' => function($chernozem){
+            return 'bar';
+        }
+    ));
+    global $chernozem_service;
+    $chernozem_service($chernozem,'foo');
+    $suite->check('Service',$chernozem['foo']=='bar');
     // Persist
     $chernozem=new Chernozem;
     global $chernozem_persist;
