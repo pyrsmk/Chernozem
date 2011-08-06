@@ -125,8 +125,7 @@ $suite->test('Basics',12,function() use ($suite){
 ->test('Built-in filters',24,function() use ($suite){
     // Lock
     $chernozem=new Chernozem(array('foo'=>'bar'));
-    global $chernozem_lock;
-    $chernozem_lock($chernozem,'foo');
+    chernozem_lock($chernozem,'foo');
     try{
         $chernozem['foo']='foobar';
         $suite->check('Lock: set',false);
@@ -147,21 +146,18 @@ $suite->test('Basics',12,function() use ($suite){
             return 'bar';
         }
     ));
-    global $chernozem_service;
-    $chernozem_service($chernozem,'foo');
+    chernozem_service($chernozem,'foo');
     $suite->check('Service',$chernozem['foo']=='bar');
     // Persist
     $chernozem=new Chernozem;
-    global $chernozem_persist;
-    $chernozem_persist($chernozem,'foo');
+    chernozem_persist($chernozem,'foo');
     $chernozem['foo']=function($chernozem){
         return time();
     };
     $suite->check('Persist',$chernozem['foo']==$chernozem['foo']);
     // Integer
     $chernozem=new Chernozem();
-    global $chernozem_integer;
-    $chernozem_integer($chernozem,'foo');
+    chernozem_integer($chernozem,'foo');
     try{
         $chernozem['foo']=72;
         $suite->check('Integer: match',true);
@@ -178,8 +174,7 @@ $suite->test('Basics',12,function() use ($suite){
     }
     // Float
     $chernozem=new Chernozem();
-    global $chernozem_float;
-    $chernozem_float($chernozem,'foo');
+    chernozem_float($chernozem,'foo');
     try{
         $chernozem['foo']=72.5;
         $suite->check('Float: match',true);
@@ -196,8 +191,7 @@ $suite->test('Basics',12,function() use ($suite){
     }
     // Boolean
     $chernozem=new Chernozem();
-    global $chernozem_boolean;
-    $chernozem_boolean($chernozem,'foo');
+    chernozem_boolean($chernozem,'foo');
     try{
         $chernozem['foo']=true;
         $suite->check('Boolean: match',true);
@@ -214,8 +208,7 @@ $suite->test('Basics',12,function() use ($suite){
     }
     // String
     $chernozem=new Chernozem();
-    global $chernozem_string;
-    $chernozem_string($chernozem,'foo');
+    chernozem_string($chernozem,'foo');
     try{
         $chernozem['foo']='bar';
         $suite->check('String: match',true);
@@ -232,8 +225,7 @@ $suite->test('Basics',12,function() use ($suite){
     }
     // Numeric
     $chernozem=new Chernozem();
-    global $chernozem_numeric;
-    $chernozem_numeric($chernozem,'foo');
+    chernozem_numeric($chernozem,'foo');
     try{
         $chernozem['foo']='72';
         $suite->check('Numeric: match',true);
@@ -250,8 +242,7 @@ $suite->test('Basics',12,function() use ($suite){
     }
     // Array
     $chernozem=new Chernozem();
-    global $chernozem_array;
-    $chernozem_array($chernozem,'foo');
+    chernozem_array($chernozem,'foo');
     try{
         $chernozem['foo']=array();
         $suite->check('Array: match',true);
@@ -268,8 +259,7 @@ $suite->test('Basics',12,function() use ($suite){
     }
     // Object
     $chernozem=new Chernozem();
-    global $chernozem_object;
-    $chernozem_object($chernozem,'foo');
+    chernozem_object($chernozem,'foo');
     try{
         $chernozem['foo']=new stdClass;
         $suite->check('Object: match',true);
@@ -286,8 +276,7 @@ $suite->test('Basics',12,function() use ($suite){
     }
     // Specific object
     $chernozem=new Chernozem();
-    global $chernozem_object;
-    $chernozem_object($chernozem,'foo','Chernozem');
+    chernozem_object($chernozem,'foo','Chernozem');
     try{
         $chernozem['foo']=new Chernozem;
         $suite->check('Object (specific): match',true);
@@ -304,8 +293,7 @@ $suite->test('Basics',12,function() use ($suite){
     }
     // Callable
     $chernozem=new Chernozem();
-    global $chernozem_callable;
-    $chernozem_callable($chernozem,'foo');
+    chernozem_callable($chernozem,'foo');
     try{
         $chernozem['foo']=array($chernozem,'search');
         $suite->check('Callable: match',true);
@@ -322,8 +310,7 @@ $suite->test('Basics',12,function() use ($suite){
     }
     // Resource
     $chernozem=new Chernozem();
-    global $chernozem_resource;
-    $chernozem_resource($chernozem,'foo');
+    chernozem_resource($chernozem,'foo');
     try{
         $chernozem['foo']=curl_init();
         $suite->check('Resource: match',true);

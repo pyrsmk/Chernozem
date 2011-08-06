@@ -13,8 +13,10 @@ Differences from Pimple
 - filters support
 - values count
 - values search
+- incrementational setter support
+- object key type support
 
-Important version remarks
+Important version changes
 -------------------------
 
 - 0.3.0: closures are not longer set as services by default
@@ -59,6 +61,12 @@ You can also pass an array the constructor to add values directly into your cont
             return 'something';
         }
     ));
+
+Please note that you can pass an object as key:
+
+    $container[new stdClass()]=72;
+
+This example is not that obvious but, as you can see, you're able to identify your values by an object.
 
 Other useful functions
 ----------------------
@@ -149,13 +157,14 @@ Locking:
 
 As you can see, filters are very flexibles and can be used for many behaviors. As it was said above, there are only 3 filter types: `FILTER_SET`, `FILTER_GET` and `FILTER_UNSET`. Set and get filters work on the same way: a value, and its corresponding key, is passed and a value must be returned. For a set filter, the new value will overwrite the original one. For a get filter, it will just return the closure's returned value. Unset filters are a bit different: keys and values are well passed to the closure, but the returned value must be boolean. If the value is allowed to be removed, true must be returned, false otherwise.
 
-To save your time, Chernozem is shipped with many useful filters. To be able to use them into your projects, you can act as follow:
+To save your time, Chernozem is shipped with many useful filters as functions. To be able to use them into your projects, you can act as follow:
 
     include('Chernozem/filters.php');
-    global $chernozem_lock;
-    $chernozem_lock($container,'foo');
+    chernozem_lock($container,'foo');
 
-And your `foo` value will be locked. Just take a look at `filters.php` to know what are the name and use of the built-in filters. But, be careful, you __can't__ add many filters for the same filter type.
+And your `foo` value will be locked.
+
+Just take a look at `filters.php` to know what are the name and use of the built-in filters. But, be careful, you __can't__ add many filters for the same filter type.
 
 Serialization
 -------------

@@ -3,6 +3,7 @@
 * add support for objects as key
 * drop service() method
 * add full filters support
+* convert built-in filters to real functions
 
 0.5.2 [2011.07.30]
 
@@ -12,9 +13,6 @@
 0.5.1 [2011.07.28]
 
 * fix non loop bug with zero index value
-
-0.5.0 [2011.07.28]
-
 * provide some built-in filters
 * add search() method
 * add Countable interface
@@ -31,9 +29,6 @@
 0.3.1 [2011.07.23]
 
 * fix rewind() bug
-
-0.3.0 [2011.07.23]
-
 * remove integrate() method
 * add service() method
 * normalize properties to not pollute children
@@ -50,9 +45,6 @@
 * fix bad serialization issues
 * add full string/integer key support
 * fix locking support
-
-0.2 [2011.07.10]
-
 * integrate() and persist() normalization
 * add setter/getter support
 * implement chaining pattern

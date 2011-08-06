@@ -14,8 +14,7 @@
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_lock;
-$chernozem_lock=function($chernozem,$key){
+function chernozem_lock($chernozem,$key){
     $chernozem->filter(
         $key,
         $closure=function($key,$value){
@@ -28,7 +27,7 @@ $chernozem_lock=function($chernozem,$key){
         $closure,
         $chernozem::FILTER_UNSET
     );
-};
+}
 
 /*
     Will execute the closure and return the result
@@ -37,8 +36,7 @@ $chernozem_lock=function($chernozem,$key){
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_service;
-$chernozem_service=function($chernozem,$key){
+function chernozem_service($chernozem,$key){
     $chernozem->filter(
         $key,
         function($key,$value) use($chernozem){
@@ -46,7 +44,7 @@ $chernozem_service=function($chernozem,$key){
         },
         $chernozem::FILTER_GET
     );
-};
+}
 
 /*
     Persist values for services
@@ -55,8 +53,7 @@ $chernozem_service=function($chernozem,$key){
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_persist;
-$chernozem_persist=function($chernozem,$key){
+function chernozem_persist($chernozem,$key){
     $chernozem->filter(
         $key,
         function($closure){
@@ -73,7 +70,7 @@ $chernozem_persist=function($chernozem,$key){
         },
         $chernozem::FILTER_SET
     );
-};
+}
 
 /*
     Integer type-hinting
@@ -82,8 +79,7 @@ $chernozem_persist=function($chernozem,$key){
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_integer;
-$chernozem_integer=function($chernozem,$key){
+function chernozem_integer($chernozem,$key){
     $chernozem->filter(
         $key,
         function($key,$value){
@@ -94,7 +90,7 @@ $chernozem_integer=function($chernozem,$key){
         },
         $chernozem::FILTER_SET
     );
-};
+}
 
 /*
     Float type-hinting
@@ -103,8 +99,7 @@ $chernozem_integer=function($chernozem,$key){
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_float;
-$chernozem_float=function($chernozem,$key){
+function chernozem_float($chernozem,$key){
     $chernozem->filter(
         $key,
         function($key,$value){
@@ -115,7 +110,7 @@ $chernozem_float=function($chernozem,$key){
         },
         $chernozem::FILTER_SET
     );
-};
+}
 
 /*
     Boolean type-hinting
@@ -124,8 +119,7 @@ $chernozem_float=function($chernozem,$key){
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_boolean;
-$chernozem_boolean=function($chernozem,$key){
+function chernozem_boolean($chernozem,$key){
     $chernozem->filter(
         $key,
         function($key,$value){
@@ -136,7 +130,7 @@ $chernozem_boolean=function($chernozem,$key){
         },
         $chernozem::FILTER_SET
     );
-};
+}
 
 /*
     String type-hinting
@@ -145,8 +139,7 @@ $chernozem_boolean=function($chernozem,$key){
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_string;
-$chernozem_string=function($chernozem,$key){
+function chernozem_string($chernozem,$key){
     $chernozem->filter(
         $key,
         function($key,$value){
@@ -157,7 +150,7 @@ $chernozem_string=function($chernozem,$key){
         },
         $chernozem::FILTER_SET
     );
-};
+}
 
 /*
     Numeric type-hinting
@@ -166,8 +159,7 @@ $chernozem_string=function($chernozem,$key){
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_numeric;
-$chernozem_numeric=function($chernozem,$key){
+function chernozem_numeric($chernozem,$key){
     $chernozem->filter(
         $key,
         function($key,$value){
@@ -178,7 +170,7 @@ $chernozem_numeric=function($chernozem,$key){
         },
         $chernozem::FILTER_SET
     );
-};
+}
 
 /*
     Array type-hinting
@@ -187,8 +179,7 @@ $chernozem_numeric=function($chernozem,$key){
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_array;
-$chernozem_array=function($chernozem,$key){
+function chernozem_array($chernozem,$key){
     $chernozem->filter(
         $key,
         function($key,$value){
@@ -199,7 +190,7 @@ $chernozem_array=function($chernozem,$key){
         },
         $chernozem::FILTER_SET
     );
-};
+}
 
 /*
     Object type-hinting
@@ -209,8 +200,7 @@ $chernozem_array=function($chernozem,$key){
         int, string $key    : the key
         string $type        : specific object type
 */
-global $chernozem_object;
-$chernozem_object=function($chernozem,$key,$type=null){
+function chernozem_object($chernozem,$key,$type=null){
     $chernozem->filter(
         $key,
         function($key,$value) use($type){
@@ -225,7 +215,7 @@ $chernozem_object=function($chernozem,$key,$type=null){
         },
         $chernozem::FILTER_SET
     );
-};
+}
 
 /*
     Callable type-hinting
@@ -234,8 +224,7 @@ $chernozem_object=function($chernozem,$key,$type=null){
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_callable;
-$chernozem_callable=function($chernozem,$key){
+function chernozem_callable($chernozem,$key){
     $chernozem->filter(
         $key,
         function($key,$value){
@@ -246,7 +235,7 @@ $chernozem_callable=function($chernozem,$key){
         },
         $chernozem::FILTER_SET
     );
-};
+}
 
 /*
     Resource type-hinting
@@ -255,8 +244,7 @@ $chernozem_callable=function($chernozem,$key){
         object $chernozem   : a Chernozem child object
         int, string $key    : the key
 */
-global $chernozem_resource;
-$chernozem_resource=function($chernozem,$key){
+function chernozem_resource($chernozem,$key){
     $chernozem->filter(
         $key,
         function($key,$value){
@@ -267,4 +255,4 @@ $chernozem_resource=function($chernozem,$key){
         },
         $chernozem::FILTER_SET
     );
-};
+}
