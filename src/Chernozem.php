@@ -1,9 +1,9 @@
 <?php
 
 /*
-    An advanced dependency injection container inspired from Pimple
+    An advanced dependency injection container
     
-    Version : 0.6.0
+    Version : I.I
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -23,112 +23,63 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
         array $__values     : injected values
         array $__filters    : filters list
     */
-    protected $__values     = array();
-    protected $__filters;
+    protected $__values;
+    protected $__filters=array();
 
     /*
         Constructor
         
         Parameters
-            array, Chernozem $values: a value list to fill in the container
+            array $values: a value list to fill in the container
     */
-    public function __construct($values=array()){
-        if(is_array($values) or ($values instanceof self)){
-            foreach($values as $key=>$value){
-                $this->offsetSet($key,$value);
-            }
-        }
-        $this->__filters=array(
-            self::FILTER_SET    => array(),
-            self::FILTER_GET    => array(),
-            self::FILTER_UNSET  => array()
-        );
+    public function __construct(array $values=array()){
+        $this->__values=$values;
     }
     
     /*
         Set a filter for a value
         
         Parameters
-            string, int $key    : a value's key
-            Closure $closure    : the closure to run for that key
+            string, int, object $key    : a value's key
+            Closure $closure            : the closure to run for that key
         
         Return
             Chernozem
     */
-    public function filter($key,Closure $closure,$type=0){
-        switch($type=(int)$type){
-            case self::FILTER_SET:
-            case self::FILTER_GET:
-            case self::FILTER_UNSET:
-                break;
-            default:
-                throw new Exception("The filter type must be one of FILTER_SET, FILTER_GET or FILTER_UNSET");
-        }
-        $this->__filters[$type][$this->__formatKey($key)]=$closure;
+    public function filter($key,Closure $closure,$type=self::FILTER_SET){
+        $this->__filters[(int)$type][$this->__formatKey($key)]=$closure;
         return $this;
     }
-    
-    /*
-        Search a value in the container
-
-        Parameters
-            string $value           : the value to find
-
-        Return
-            boolean, int, string    : false if not found, otherwise the key
-    */
-    public function search($value){
-        return array_search($value,$this->__values,true);
-    }
 
     /*
-        Convert Chernozem to an array
+        Return the contained values
         
         Return
             array
     */
-    public function toArray(){
-        $data=array();
-        foreach($this as $key=>$value){
-            if($value instanceof Chernozem){
-                $data[$key]=$value->toArray();
-            }
-            else{
-                $data[$key]=$value;
-            }
-        }
-        return $data;
-    }
-    
-    /*
-        Return the number of values in the container
-
-        Return
-            int
-    */
-    public function count(){
-        return count($this->__values);
+    public function toArray(){ 
+        return $this->__values;
     }
     
     /*
         Verify if the key exists
         
         Parameters
-            string, int $key: the key
+            string, int, object $key: the key
         
         Return
             boolean
     */
     public function offsetExists($key){
-        return array_key_exists($this->__formatKey($key),$this->__values);
+        return isset($this->__values[$this->__formatKey($key)]);
     }
     
     /*
         Set a value
         
         Parameters
-            string, int $key    : the key
-            mixed $value        : the value
+            string, int, object $key    : the key
+            mixed $value                : the value
     */
     public function offsetSet($key,$value){
         // Format
@@ -137,12 +88,9 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
         }
         $key=$this->__formatKey($key);
         // Execute the filter
-        if($filter=$this->__filters[self::FILTER_SET][$key]){
+        if(isset($this->__filters[self::FILTER_SET][$key])){
+            $filter=$this->__filters[self::FILTER_SET][$key];
             $value=$filter($key,$value);
-        }
-        // Create a new Chernozem object for that array
-        if(is_array($value)){
-            $value=new self($value);
         }
         // Register the value
         $this->__values[$key]=$value;
@@ -152,7 +100,7 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
         Return a value
         
         Parameters
-            string, int $key: the key
+            string, int, object $key: the key
         
         Return
             mixed
@@ -162,12 +110,9 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
         $key=$this->__formatKey($key);
         // Get the value
         $value=&$this->__values[$key];
-        // Default value
-        if($value===null){
-            $value=new self;
-        }
         // Execute the filter
-        if($filter=$this->__filters[self::FILTER_GET][$key]){
+        if(isset($this->__filters[self::FILTER_GET][$key])){
+            $filter=$this->__filters[self::FILTER_GET][$key];
             $value=$filter($key,$value);
         }
         return $value;
@@ -177,14 +122,15 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
         Unset a value
         
         Parameters
-            string, int $key: the key
+            string, int, object $key: the key
     */
     public function offsetUnset($key){
         // Init
         $key=$this->__formatKey($key);
         $unset=true;
         // Execute the filter
-        if($filter=$this->__filters[self::FILTER_UNSET][$key]){
+        if(isset($this->__filters[self::FILTER_UNSET][$key])){
+            $filter=$this->__filters[self::FILTER_UNSET][$key];
             $unset=(bool)$filter($key,$this->__values[$key]);
         }
         // Unset the value
@@ -236,7 +182,17 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
     public function valid(){
         return key($this->__values)!==null;
     }
-    
+
+    /*
+        Return the number of values in the container
+
+        Return
+            int
+    */
+    public function count(){
+        return count($this->__values);
+    }
+
     /*
         Serialize Chernozem
         
@@ -244,22 +200,23 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
             string
     */
     public function serialize(){
-        // Prepare data
-        $data=get_object_vars($this);
-        $arrays=array(
-            &$data['__values'],
-            &$data['__filters'][self::FILTER_SET],
-            &$data['__filters'][self::FILTER_GET],
-            &$data['__filters'][self::FILTER_UNSET]
-        );
-        // Serialize closures
-        foreach($arrays as &$array){
+        // Serialize function
+        $serialize=function($array) use(&$serialize){
             foreach($array as &$value){
                 if($value instanceof Closure){
                     $value=serialize_closure($value);
                 }
+                elseif(is_array($value)){
+                    $value=$serialize($value);
+                }
             }
-        }
+            return $array;
+        };
+        // Serialize data
+        $data[0]=$serialize($this->__values);
+        $data[1]=$serialize($this->__filters[self::FILTER_SET]);
+        $data[2]=$serialize($this->__filters[self::FILTER_GET]);
+        $data[3]=$serialize($this->__filters[self::FILTER_UNSET]);
         // Final serialization
         return serialize($data);
     }
@@ -271,53 +228,59 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
             string $serialized: serialized data
     */
     public function unserialize($serialized){
-        // Unserialize data
-        $data=unserialize($serialized);
-        // Unserialize closures
-        $unserialize=function($array){
-            foreach($array as $key=>$value){
+        // Unserialize function
+        $unserialize=function($array) use(&$unserialize){
+            foreach($array as &$value){
                 if(is_string($value) and strpos($value,':"function(')!==false){
-                    $values[$key]=unserialize_closure($value);
+                    $value=unserialize_closure($value);
                 }
-                else{
-                    $values[$key]=$value;
+                elseif(is_array($value)){
+                    $value=$unserialize($value);
                 }
             }
-            return $values;
+            return $array;
         };
-        $data['__values']=$unserialize($data['__values']);
-        $data['__filters'][self::FILTER_SET]=$unserialize($data['__filters'][self::FILTER_SET]);
-        $data['__filters'][self::FILTER_GET]=$unserialize($data['__filters'][self::FILTER_GET]);
-        $data['__filters'][self::FILTER_UNSET]=$unserialize($data['__filters'][self::FILTER_UNSET]);
-        // Dump final data
-        foreach($data as $name=>$value){
-            $this->$name=$value;
-        }
+        // General unserialization
+        $data=unserialize($serialized);
+        // Unserialize data
+        $this->__values=$unserialize($data[0]);
+        $this->__filters[self::FILTER_SET]=$unserialize($data[1]);
+        $this->__filters[self::FILTER_GET]=$unserialize($data[2]);
+        $this->__filters[self::FILTER_UNSET]=$unserialize($data[3]);
     }
     
     /*
         Verify and format a key
 
         Parameters
-            string $key: the key
+            string, int, object $key    : the key
 
         Return
-            string: the formatted key
+            string, int                 : the formatted key
+
+        Throw
+            Exception                   : if a key is a string and it's empty
+            Exception                   : if the key type is invalid
     */
     protected function __formatKey($key){
-        // Verify type
-        if(!is_string($key) and !is_int($key) and !is_object($key)){
-            throw new Exception("Key must be a string, an integer or an object");
+        // String
+        if(is_string($key)){
+            if($key){
+                return $key;
+            }
+            else{
+                throw new Exception("Key string can't be empty");
+            }
         }
-        // Verify strings
-        if($key===''){
-            throw new Exception("Key string can't be empty");
+        // Integer
+        elseif(is_int($key)){
+            return $key;
         }
-        // Format key objects
-        if(is_object($key)){
-            $key=spl_object_hash($key);
+        // Object
+        elseif(is_object($key)){
+            return spl_object_hash($key);
         }
-        return $key;
+        throw new Exception("Key must be a string, an integer or an object");
     }
 
 }

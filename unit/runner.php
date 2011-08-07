@@ -2,22 +2,20 @@
 
 error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
 
-require(__DIR__.'/../lib/Unit/Suite.php');
-require(__DIR__.'/../lib/Unit/Suite/Cli.php');
+require __DIR__.'/../lib/Unit/Suite.php';
+require __DIR__.'/../lib/Unit/Suite/Cli.php';
 
-require(__DIR__.'/../lib/serialize.php');
+require __DIR__.'/../lib/serialize.php';
 
-require(__DIR__.'/../src/filters.php');
-require(__DIR__.'/../src/Chernozem.php');
+require __DIR__.'/../src/filters.php';
+require __DIR__.'/../src/Chernozem.php';
 
 $suite=new Lumy\Unit\Suite\Cli('Chernozem');
 
-$suite->test('Basics',12,function() use ($suite){
+$suite->test('Basics',8,function() use ($suite){
     // Constructor
     $chernozem=new Chernozem(array('test'=>'test'));
     $suite->check('Array passed to constructor',$chernozem['test']=='test');
-    $chernozem=new Chernozem($chernozem);
-    $suite->check('Chernozem object passed to constructor',$chernozem['test']=='test');
     // Set/get
     $chernozem=new Chernozem;
     $chernozem['test']=33;
@@ -32,18 +30,13 @@ $suite->test('Basics',12,function() use ($suite){
     $chernozem[]='test2';
     $suite->check('Set/get: [] method',$chernozem[1]=='test2');
     $chernozem[$chernozem]='bar';
-    $suite->check('Set/get: objects as key',$chernozem[$chernozem]=='bar');
-    $chernozem['test']=function(){};
-    $suite->check('Set/get: closures',$chernozem['test'] instanceof Closure);
+    $suite->check('Set/get: object as key',$chernozem[$chernozem]=='bar');
     // Isset/unset
     $suite->check('Isset',isset($chernozem['test']));
     unset($chernozem['test']);
     $suite->check('Unset',!isset($chernozem['test']));
-    // Other
-    $chernozem['test']='test';
-    $suite->check('Search: string index',$chernozem->search('test')=='test');
-    $suite->check('Search: numeric index',$chernozem->search('test2')==1);
-    $suite->check('Count',count($chernozem)==3);
+    // Count
+    $suite->check('Count',count($chernozem)==2);
 })
 
 ->test('Filters',9,function() use ($suite){
@@ -295,7 +288,7 @@ $suite->test('Basics',12,function() use ($suite){
     $chernozem=new Chernozem();
     chernozem_callable($chernozem,'foo');
     try{
-        $chernozem['foo']=array($chernozem,'search');
+        $chernozem['foo']=array($chernozem,'filter');
         $suite->check('Callable: match',true);
     }
     catch(Exception $e){

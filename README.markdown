@@ -1,5 +1,5 @@
-Chernozem 0.6.0
-===============
+Chernozem I.I
+=============
 
 Chernozem is an advanced dependency injection container originally based on Pimple (https://github.com/fabpot/pimple).
 
@@ -7,12 +7,10 @@ Differences from Pimple
 -----------------------
 
 - closures are __not__ services by default
-- multimensionnal arrays
 - iteration
 - complete serialization
 - filters support
 - values count
-- values search
 - incrementational setter support
 - object key type support
 
@@ -22,6 +20,7 @@ Important version changes
 - 0.3.0: closures are not longer set as services by default
 - 0.4.0: persistance, hinting, locking, setter and getter support was replaced by filters
 - 0.6.0: service() was dropped in favor of filter implementation
+- I.I: for performance purposes (about +69%) multidimensional arrays support and search() method were removed
 
 What the hell is that?
 ----------------------
@@ -68,39 +67,22 @@ Please note that you can pass an object as key:
 
 This example is not that obvious but, as you can see, you're able to identify your values by an object.
 
-Other useful functions
-----------------------
+But, be careful that Chernozem is just a container and does not support multidimensional arrays syntax. As `$c['foo']=42` will work, `$c['foo']['bar']=42` won't. You'll must act with:
+
+    $foo=$c['foo'];
+    $foo['bar']=42;
+    $c['foo']=$foo;
+
+It's a technical PHP limitation. In its later versions, Chernozem supported multdimensional arrays syntax but it required to create a new instance for each array in the container and as said previsouly it was 69% slower. Chernozem is a raw material object, so performance goal win ^^
+
+Countable
+---------
 
 You can get the number of values of your container:
 
     if(count($container)==2{
         echo 'You really have two values!';
     }
-
-And search keys:
-
-    // Will return 'bar' (from the example above)
-    $container->search(0.758);
-
-Multidimensionnal arrays
-------------------------
-
-Chernozem supports array chaining by creating a Chernozem instance for each arrays:
-
-    $container=new Chernozem;
-    $container['fruits']=new array(
-        'kiwi'          => 'green',
-        'strawberry'    => 'red',
-        'banana'        => 'yellow'
-    );
-    // Print 'red'
-    echo $container['fruits']['strawberry'];
-
-Also, please notice that Chernozem will create a new itself instance for each retrieved `null` value to provide native multidimensional support as:
-
-    $container['foo']['bar']['baz']='fooz';
-
-Then, if you want to test an unset value in Chernozem, instead of try `$container['foo']['bar']===null` you will must do `$container['foo']['bar'] instanceof Chernozem` to check whether your value is set or not. Moreover, even you've added an array to Chernozem, you'll must check it as a Chernozem object, either an array.
 
 Iteration
 ---------
