@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container
     
-    Version : I.I
+    Version : I.II
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -23,8 +23,8 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
         array $__values     : injected values
         array $__filters    : filters list
     */
-    protected $__values;
-    protected $__filters=array();
+    protected $__values     = array();
+    protected $__filters    = array();
 
     /*
         Constructor
@@ -32,8 +32,12 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
         Parameters
             array $values: a value list to fill in the container
     */
-    public function __construct(array $values=array()){
-        $this->__values=$values;
+    public function __construct($values=array()){
+        if(is_array($values) or $values instanceof Iterator){
+            foreach($values as $key=>$value){
+                $this->offsetSet($key,$value);
+            }
+        }
     }
     
     /*
@@ -50,7 +54,7 @@ class Chernozem implements ArrayAccess, Iterator, Serializable, Countable{
         $this->__filters[(int)$type][$this->__formatKey($key)]=$closure;
         return $this;
     }
-
+    
     /*
         Return the contained values
         

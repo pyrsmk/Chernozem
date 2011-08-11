@@ -1,3 +1,7 @@
+I.II [2011.08.09]
+
+* restore correct constructor's behavior
+
 I.I [2011.08.07]
 
 * remove multidimensional support
