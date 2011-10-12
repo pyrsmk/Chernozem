@@ -3,14 +3,14 @@ Chernozem 1.0.0
 
 Chernozem is a collection of dependency injection managers.
 
-Dependency injection is a design pattern to make better encapsulation of external objects into another object. Fabien Potencier has written an article about that, I advise you to read it: http://fabien.potencier.org/article/11/what-is-dependency-injection. Chernozem classes are array dependency injection containers. That means you can inject values (configure your object) with an array style. It is very helpful because extending thoses classes will drop much of your setters/getters and will provide a robust implementation. For a good example, let's take a look to the (Lumy)[https://github.com/pyrsmk/Lumy] framework project, which has heavy Chernozem integration.
+Dependency injection is a design pattern to make better encapsulation of external objects into another object. Fabien Potencier has written an article about that, I advise you to read it: http://fabien.potencier.org/article/11/what-is-dependency-injection. Chernozem classes are array dependency injection containers. That means you can inject values (configure your object) with an array style. It is very helpful because extending thoses classes will drop much of your setters/getters and will provide a robust implementation. For a good example, let's take a look to the [Lumy](https://github.com/pyrsmk/Lumy) framework project, which has heavy Chernozem integration.
 
 Notes about the 0.x branch
 ==========================
 
 Chernozem 1.x is _NOT_ compatible at all with Chernozem 0.x (the last is 0.7.1).
 
-With Chernozem 0.x, serializing and unserializing closures was natively included into the project. From now, you will must do that by yourself with the `serialize.php` class from the (Funktions)[https://github.com/pyrsmk/Funktions] project.
+With Chernozem 0.x, serializing and unserializing closures was natively included into the project. From now, you will must do that by yourself with the `serialize.php` class from the [Funktions](https://github.com/pyrsmk/Funktions) project.
 
 That said, let's go for some explanations!
 
@@ -80,7 +80,6 @@ For the `ArrayAccess` behavior, only strings are allowed as keys. But here's the
     echo $container['foo'];
     // Access to locked $_bar property
     echo $container['bar'];
-
     // Set a locked property will throw an exception
     $container['bar']=72;
 
