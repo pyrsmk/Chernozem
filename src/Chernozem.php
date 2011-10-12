@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container
     
-    Version : I.II
+    Version : 0.7.1
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT

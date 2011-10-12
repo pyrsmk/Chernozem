@@ -1,5 +1,5 @@
-Chernozem I.II
-==============
+Chernozem 0.7.1
+===============
 
 Chernozem is an advanced dependency injection container originally based on Pimple (https://github.com/fabpot/pimple).
 
@@ -17,13 +17,13 @@ Differences from Pimple
 Important version changes
 -------------------------
 
-- 0.3.0: closures are not longer set as services by default
-- 0.4.0: persistance, hinting, locking, setter and getter support was replaced by filters
-- 0.6.0: service() was dropped in favor of filter implementation
-- I.I: for performance purposes, multidimensional arrays support and search() method were removed (it's about a 70~90% gain)
+- 0.3: closures are not longer set as services by default
+- 0.4: persistance, hinting, locking, setter and getter support was replaced by filters
+- 0.6: service() was dropped in favor of filter implementation
+- 0.7: for performance purposes, multidimensional arrays support and search() method were removed (it's about a 70~90% gain)
 
-What the hell is that?
-----------------------
+What the hell is that thing?
+----------------------------
 
 Dependency injection is a design pattern to make better encapsulation of external objects into another object. Fabien Potencier has written an article about that, I advise you to read it: http://fabien.potencier.org/article/11/what-is-dependency-injection. Chernozem is an array dependency injection container. It means that it will act as an array (even it's an object). It is very helpful because extending it will drop much of your setters/getters and will provide a strong implementation which will be the same across all your classes.
 
@@ -151,9 +151,9 @@ Just take a look at `filters.php` to know what are the name and use of the built
 Serialization
 -------------
 
-By default, closures cannot be serialized. Since Chernozem is a raw material, we've chosen to implement it. But, in order to use serialization, you __must__ include the `serialize.php` file, which contains the serialization functions for closures. This file is hosted at https://github.com/pyrsmk/LumyFunctions.
+By default, closures cannot be serialized. Since Chernozem is a raw material, we've chosen to implement it. But, in order to use serialization, you __must__ include the `serialize.php` file, which contains the serialization functions for closures. This file is hosted [there](https://github.com/pyrsmk/Lumy/blob/master/Functions/src/serialize.php).
 
 Extending
 ---------
 
-Extend Chernozem is quite simple as do a `class Klass extends Chernozem`. The only thing to know is that using `$this->__values['foo']` instead of `$this['foo']` inside your class adds a comfortable performance gain.
+The principal goal of Chernozem is to be extended. This is simple as do a `class Klass extends Chernozem`. The only thing to know is that using `$this->__values['foo']` instead of `$this['foo']` inside your class adds a comfortable performance gain.
