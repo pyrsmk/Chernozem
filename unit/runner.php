@@ -1,323 +1,250 @@
 <?php
 
+########################################################### Init
+
 error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
 
-require __DIR__.'/../lib/Unit/Suite.php';
-require __DIR__.'/../lib/Unit/Suite/Cli.php';
+require __DIR__.'/../lib/Suite.php';
+require __DIR__.'/../lib/Suite/Cli.php';
 
-require __DIR__.'/../lib/serialize.php';
+require __DIR__.'/../src/Container.php';
+require __DIR__.'/../src/Properties.php';
 
-require __DIR__.'/../src/filters.php';
-require __DIR__.'/../src/Chernozem.php';
+########################################################### Data
 
-$suite=new Lumy\Unit\Suite\Cli('Chernozem');
+class A extends Chernozem\Container{}
 
-$suite->test('Basics',8,function() use ($suite){
-    // Constructor
-    $chernozem=new Chernozem(array('test'=>'test'));
-    $suite->check('Array passed to constructor',$chernozem['test']=='test');
-    // Set/get
-    $chernozem=new Chernozem;
-    $chernozem['test']=33;
-    $suite->check('Set/get',$chernozem['test']==33);
-    try{
-        $chernozem['']=33;
-        $suite->check("Set/get: empty key",false);
+class B extends Chernozem\Properties{
+    protected $a=72;
+    protected $_b;
+    protected $__c;
+}
+
+########################################################### Chernozem\Container
+
+class Container extends Lumy\Suite\Cli{
+    
+    public function __construct(){
+        $this->c=new A;
     }
-    catch(Exception $e){
-        $suite->check("Set/get: empty key",true);
+    
+    protected function testtoArray(){
+        $this->check('An array was returned',is_array($this->c->toArray()));
+        return 1;
     }
-    $chernozem[]='test2';
-    $suite->check('Set/get: [] method',$chernozem[1]=='test2');
-    $chernozem[$chernozem]='bar';
-    $suite->check('Set/get: object as key',$chernozem[$chernozem]=='bar');
-    // Isset/unset
-    $suite->check('Isset',isset($chernozem['test']));
-    unset($chernozem['test']);
-    $suite->check('Unset',!isset($chernozem['test']));
-    // Count
-    $suite->check('Count',count($chernozem)==2);
-})
-
-->test('Filters',9,function() use ($suite){
-    $chernozem=new Chernozem;
-    // FILTER_SET
-    $chernozem->filter(
-        'test',
-        function($key,$value) use($suite){
-            $suite->check('Set: key',$key=='test');
-            $suite->check('Set: value',$value instanceof Closure);
-            return 72;
-        },
-        $chernozem::FILTER_SET
-    );
-    $chernozem['test']=function(){};
-    $suite->check('Set: equals to 72',$chernozem['test']==72);
-    // FILTER_GET
-    $chernozem->filter(
-        'test',
-        function($key,$value) use($suite){
-            $suite->check('Get: key',$key=='test');
-            $suite->check('Get: value',$value==72);
-            return $value;
-        },
-        $chernozem::FILTER_GET
-    );
-    $suite->check('Get: equals to 72',$chernozem['test']==72);
-    // FILTER_UNSET
-    $chernozem['test2']=72;
-    $chernozem->filter(
-        'test2',
-        function($key,$value) use($suite){
-            $suite->check('Unset: key',$key=='test2');
-            $suite->check('Unset: value',$value==72);
-        },
-        $chernozem::FILTER_UNSET
-    );
-    unset($chernozem['test2']);
-    $suite->check('Unset: still setted',$chernozem['test2']==72);
-})
-
-->test('Iteration',10,function() use ($suite){
-    $chernozem=new Chernozem;
-    $chernozem['test1']=1;
-    $chernozem['test2']=2;
-    $chernozem['test3']=3;
-    $chernozem['test4']=4;
-    $chernozem['test5']=5;
-    $i=0;
-    foreach($chernozem as $key=>$value){
-        $suite->check('Key '.(++$i),$key=="test$i");
-        $suite->check('Value '.$i,$value==$i);
-    }
-})
-
-->test('Serialization',2,function() use ($suite){
-    // Prepare tests
-    $chernozem=new Chernozem;
-    $chernozem['basic']=function(){};
-    $chernozem->filter('filter',function($key,$value){
-        return ucfirst($value);
-    });
-    $chernozem['filter']='test';
-    // (Un)serialize
-    $chernozem=unserialize(serialize($chernozem));
-    // Tests
-    $suite->check('Values',$chernozem['basic'] instanceof Closure);
-    $suite->check('Filters',$chernozem['filter']=='Test');
-})
-
-->test('toArray',2,function() use ($suite){
-    $chernozem=new Chernozem;
-    $chernozem['array']=array();
-    $array=$chernozem->toArray();
-    $suite->check('Valid array',is_array($array));
-    $suite->check('Valid recursive array',is_array($array['array']));
-})
-
-->test('Built-in filters',24,function() use ($suite){
-    // Lock
-    $chernozem=new Chernozem(array('foo'=>'bar'));
-    chernozem_lock($chernozem,'foo');
-    try{
-        $chernozem['foo']='foobar';
-        $suite->check('Lock: set',false);
-    }
-    catch(Exception $e){
-        $suite->check('Lock: set',true);
-    }
-    try{
-        unset($chernozem['foo']);
-        $suite->check('Lock: unset',false);
-    }
-    catch(Exception $e){
-        $suite->check('Lock: unset',true);
-    }
-    // Service
-    $chernozem=new Chernozem(array(
-        'foo' => function($chernozem){
-            return 'bar';
+    
+    protected function testArrayAccess(){
+        // Set
+        try{
+            $this->c[33]=33;
+            $this->check('Set with an integer key',true);
         }
-    ));
-    chernozem_service($chernozem,'foo');
-    $suite->check('Service',$chernozem['foo']=='bar');
-    // Persist
-    $chernozem=new Chernozem;
-    chernozem_persist($chernozem,'foo');
-    $chernozem['foo']=function($chernozem){
-        return time();
-    };
-    $suite->check('Persist',$chernozem['foo']==$chernozem['foo']);
-    // Integer
-    $chernozem=new Chernozem();
-    chernozem_integer($chernozem,'foo');
-    try{
-        $chernozem['foo']=72;
-        $suite->check('Integer: match',true);
+        catch(Exception $e){
+            $this->check('Set with an integer key: '.$e->getMessage(),false);
+        }
+        try{
+            $this->c[]='test2';
+            $this->check('Set with no key',true);
+        }
+        catch(Exception $e){
+            $this->check('Set with no key: '.$e->getMessage(),false);
+        }
+        try{
+            $this->c['test']=33;
+            $this->check('Set with a string key',true);
+        }
+        catch(Exception $e){
+            $this->check('Set with a string key: '.$e->getMessage(),false);
+        }
+        try{
+            $this->c['']=33;
+            $this->check("Can't set with an empty string key",false);
+        }
+        catch(Exception $e){
+            $this->check("Can't set with an empty string key",true);
+        }
+        try{
+            $this->c[$this->c]='bar';
+            $this->check('Set with an object key',true);
+        }
+        catch(Exception $e){
+            $this->check('Set with an object key: '.$e->getMessage(),false);
+        }
+        // Get
+        try{
+            $this->check('Get with an integer key',$this->c[33]==33);
+        }
+        catch(Exception $e){
+            $this->check('Get with an integer key: '.$e->getMessage(),false);
+        }
+        try{
+            $this->check('Get with a string key',$this->c['test']==33);
+        }
+        catch(Exception $e){
+            $this->check('Get with a string key: '.$e->getMessage(),false);
+        }
+        try{
+            $this->c[''];
+            $this->check("Can't get with an empty string key",false);
+        }
+        catch(Exception $e){
+            $this->check("Can't get with an empty string key",true);
+        }
+        try{
+            $this->check('Get with an object key',$this->c[$this->c]=='bar');
+        }
+        catch(Exception $e){
+            $this->check('Get with an object key: '.$e->getMessage(),false);
+        }
+        // Isset
+        $this->check('Isset',isset($this->c['test']));
+        // Unset
+        unset($this->c['test']);
+        $this->check('Unset',!isset($this->c['test']));
+        return 11;
     }
-    catch(Exception $e){
-        $suite->check('Integer: match',false);
+    
+    protected function testConstructor(){
+        try{
+            $this->c=new A(array('test'=>'test'));
+            $this->check('Built with an array',$this->c['test']=='test');
+        }
+        catch(Exception $e){
+            $this->check('Built with an array: '.$e->getMessage(),false);
+        }
+        try{        
+            $this->c=new A($this->c);
+            $this->check('Built with a traversable object',$this->c['test']=='test');
+        }
+        catch(Exception $e){
+            $this->check('Built with a traversable object: '.$e->getMessage(),false);
+        }
+        return 2;
     }
-    try{
-        $chernozem['foo']='bar';
-        $suite->check('Integer: do not match',false);
+    
+    protected function testIterator(){
+        unset($this->c['test']);
+        $this->c['test1']=1;
+        $this->c['test2']=2;
+        $this->c['test3']=3;
+        $this->c['test4']=4;
+        $this->c['test5']=5;
+        $i=0;
+        foreach($this->c as $key=>$value){
+            $this->check('Valid key '.(++$i),$key=="test$i");
+            $this->check('Valid value '.$i,$value==$i);
+        }
+        return 10;
     }
-    catch(Exception $e){
-        $suite->check('Integer: do not match',true);
+    
+    protected function testCountable(){
+        $this->check('5 items in the container',count($this->c)==5);
+        return 1;
     }
-    // Float
-    $chernozem=new Chernozem();
-    chernozem_float($chernozem,'foo');
-    try{
-        $chernozem['foo']=72.5;
-        $suite->check('Float: match',true);
-    }
-    catch(Exception $e){
-        $suite->check('Float: match',false);
-    }
-    try{
-        $chernozem['foo']='bar';
-        $suite->check('Float: do not match',false);
-    }
-    catch(Exception $e){
-        $suite->check('Float: do not match',true);
-    }
-    // Boolean
-    $chernozem=new Chernozem();
-    chernozem_boolean($chernozem,'foo');
-    try{
-        $chernozem['foo']=true;
-        $suite->check('Boolean: match',true);
-    }
-    catch(Exception $e){
-        $suite->check('Boolean: match',false);
-    }
-    try{
-        $chernozem['foo']='bar';
-        $suite->check('Boolean: do not match',false);
-    }
-    catch(Exception $e){
-        $suite->check('Boolean: do not match',true);
-    }
-    // String
-    $chernozem=new Chernozem();
-    chernozem_string($chernozem,'foo');
-    try{
-        $chernozem['foo']='bar';
-        $suite->check('String: match',true);
-    }
-    catch(Exception $e){
-        $suite->check('String: match',false);
-    }
-    try{
-        $chernozem['foo']=72;
-        $suite->check('String: do not match',false);
-    }
-    catch(Exception $e){
-        $suite->check('String: do not match',true);
-    }
-    // Numeric
-    $chernozem=new Chernozem();
-    chernozem_numeric($chernozem,'foo');
-    try{
-        $chernozem['foo']='72';
-        $suite->check('Numeric: match',true);
-    }
-    catch(Exception $e){
-        $suite->check('Numeric: match',false);
-    }
-    try{
-        $chernozem['foo']='blabla';
-        $suite->check('Numeric: do not match',false);
-    }
-    catch(Exception $e){
-        $suite->check('Numeric: do not match',true);
-    }
-    // Array
-    $chernozem=new Chernozem();
-    chernozem_array($chernozem,'foo');
-    try{
-        $chernozem['foo']=array();
-        $suite->check('Array: match',true);
-    }
-    catch(Exception $e){
-        $suite->check('Array: match',false);
-    }
-    try{
-        $chernozem['foo']='bar';
-        $suite->check('Array: do not match',false);
-    }
-    catch(Exception $e){
-        $suite->check('Array: do not match',true);
-    }
-    // Object
-    $chernozem=new Chernozem();
-    chernozem_object($chernozem,'foo');
-    try{
-        $chernozem['foo']=new stdClass;
-        $suite->check('Object: match',true);
-    }
-    catch(Exception $e){
-        $suite->check('Object: match',false);
-    }
-    try{
-        $chernozem['foo']='bar';
-        $suite->check('Object: do not match',false);
-    }
-    catch(Exception $e){
-        $suite->check('Object: do not match',true);
-    }
-    // Specific object
-    $chernozem=new Chernozem();
-    chernozem_object($chernozem,'foo','Chernozem');
-    try{
-        $chernozem['foo']=new Chernozem;
-        $suite->check('Object (specific): match',true);
-    }
-    catch(Exception $e){
-        $suite->check('Object (specific): match',false);
-    }
-    try{
-        $chernozem['foo']='bar';
-        $suite->check('Object (specific): do not match',false);
-    }
-    catch(Exception $e){
-        $suite->check('Object (specific): do not match',true);
-    }
-    // Callable
-    $chernozem=new Chernozem();
-    chernozem_callable($chernozem,'foo');
-    try{
-        $chernozem['foo']=array($chernozem,'filter');
-        $suite->check('Callable: match',true);
-    }
-    catch(Exception $e){
-        $suite->check('Callable: match',false);
-    }
-    try{
-        $chernozem['foo']='bar';
-        $suite->check('Callable: do not match',false);
-    }
-    catch(Exception $e){
-        $suite->check('Callable: do not match',true);
-    }
-    // Resource
-    $chernozem=new Chernozem();
-    chernozem_resource($chernozem,'foo');
-    try{
-        $chernozem['foo']=curl_init();
-        $suite->check('Resource: match',true);
-    }
-    catch(Exception $e){
-        $suite->check('Resource: match',false);
-    }
-    try{
-        $chernozem['foo']='bar';
-        $suite->check('Resource: do not match',false);
-    }
-    catch(Exception $e){
-        $suite->check('Resource: do not match',true);
-    }
-})
+    
+}
 
-->run();
+$suite=new Container;
+$suite->run();
+
+########################################################### Chernozem\Properties
+
+class Properties extends Lumy\Suite\Cli{
+    
+    public function __construct(){
+        $this->c=new B;
+    }
+    
+    protected function testArrayAccess(){
+        // Set
+        try{
+            $this->c[33]=33;
+            $this->check("Can't set an option with an integer name",false);
+        }
+        catch(Exception $e){
+            $this->check("Can't set an option with an integer name",true);
+        }
+        try{
+            $this->c['']=33;
+            $this->check("Can't set an option with an empty name",false);
+        }
+        catch(Exception $e){
+            $this->check("Can't set an option with an empty name",true);
+        }
+        try{
+            $this->c['']=33;
+            $this->check("Can't set an non-existent option",false);
+        }
+        catch(Exception $e){
+            $this->check("Can't set an non-existent option",true);
+        }
+        try{
+            $this->c['b']=33;
+            $this->check("Can't set a locked option",false);
+        }
+        catch(Exception $e){
+            $this->check("Can't set a locked option",true);
+        }
+        try{
+            $this->c['c']=33;
+            $this->check("Can't set __ properties",false);
+        }
+        catch(Exception $e){
+            $this->check("Can't set __ properties",true);
+        }
+        try{
+            $this->c['c']=array();
+            $this->check("Can't set an option from another type",false);
+        }
+        catch(Exception $e){
+            $this->check("Can't set an option from another type",true);
+        }
+        try{
+            $this->c['a']=33;
+            $this->check("Set an option",true);
+        }
+        catch(Exception $e){
+            $this->check("Set an option: ".$e->getMessage(),false);
+        }
+        // Get
+        try{
+            $this->c[''];
+            $this->check("Can't get an non-existent option",false);
+        }
+        catch(Exception $e){
+            $this->check("Can't get an non-existent option",true);
+        }
+        try{
+            $this->c['c'];
+            $this->check("Can't get __ properties",false);
+        }
+        catch(Exception $e){
+            $this->check("Can't get __ properties",true);
+        }
+        try{
+            $this->check("Get an option",$this->c['a']==33);
+        }
+        catch(Exception $e){
+            $this->check("Get an option: ".$e->getMessage(),false);
+        }
+        // Isset
+        $this->check('Non-locked option is set',isset($this->c['a']));
+        $this->check('Locked option is set',isset($this->c['b']));
+        return 12;
+    }
+    
+    protected function testConstructor(){
+        try{
+            $this->c=new B(array('a'=>10));
+            $this->check('Built with an array',$this->c['a']==10);
+        }
+        catch(Exception $e){
+            $this->check('Built with an array: '.$e->getMessage(),false);
+        }
+        return 1;
+    }
+    
+}
+
+$suite=new Properties;
+$suite->run();

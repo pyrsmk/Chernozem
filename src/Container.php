@@ -5,17 +5,31 @@ namespace Chernozem;
 /*
     Container-oriented dependency injection manager
     
+    Version : 1.0.0
     Author  : Aurélien Delogu (dev@dreamysource.fr)
-    Package : Chernozem
-    Site    : https://github.com/pyrsmk/Chernozem
+    URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
 */
-class Container extends \Chernozem implements \Iterator, \Countable{
+abstract class Container implements \ArrayAccess, \Iterator, \Countable{
 
     /*
         array $__values: injected values
     */
     protected $__values=array();
+    
+    /*
+        Constructor
+        
+        Parameters
+            array $values: a value list to fill in the container
+    */
+    public function __construct($values=array()){
+        if(is_array($values) or ($values instanceof \Traversable)){
+            foreach($values as $key=>$value){
+                $this->offsetSet($key,$value);
+            }
+        }
+    }
     
     /*
         Return the contained values
@@ -136,6 +150,40 @@ class Container extends \Chernozem implements \Iterator, \Countable{
     */
     public function count(){
         return count($this->__values);
+    }
+    
+    /*
+        Verify and format a key
+
+        Parameters
+            string, int, object $key    : the key
+
+        Return
+            string, int                 : the formatted key
+
+        Throw
+            Exception                   : if a key is an empty string
+            Exception                   : if the key type is invalid
+    */
+    protected function __formatKey($key){
+        // String
+        if(is_string($key)){
+            if($key){
+                return $key;
+            }
+            else{
+                throw new \Exception("Key string can't be empty");
+            }
+        }
+        // Integer
+        elseif(is_int($key)){
+            return $key;
+        }
+        // Object
+        elseif(is_object($key)){
+            return spl_object_hash($key);
+        }
+        throw new \Exception("Key must be a string, an integer or an object");
     }
     
 }
