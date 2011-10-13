@@ -1,5 +1,5 @@
-Chernozem 1.0.0
-===============
+Chernozem
+=========
 
 Chernozem is a collection of dependency injection managers.
 
@@ -8,9 +8,9 @@ Dependency injection is a design pattern to make better encapsulation of externa
 Notes about the 0.x branch
 ==========================
 
-Chernozem 1.x is _NOT_ compatible at all with Chernozem 0.x (the last is 0.7.1).
+Chernozem 1.x is __NOT__ compatible at all with Chernozem 0.x (the last is 0.7.1).
 
-With Chernozem 0.x, serializing and unserializing closures was natively included into the project. From now, you will must do that by yourself with the `serialize.php` class from the [Funktions](https://github.com/pyrsmk/Funktions) project.
+With Chernozem 0.x, serializing and unserializing closures was natively included into the project. From now, you will must do that by yourself with the `serialize.php` class from the [Funktions](https://github.com/pyrsmk/Funktions) project. Also, filters have been dropped.
 
 That said, let's go for some explanations!
 
