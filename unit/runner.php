@@ -18,6 +18,7 @@ class B extends Chernozem\Properties{
     protected $a=72;
     protected $_b;
     protected $__c;
+    protected $d;
 }
 
 ########################################################### Chernozem\Container
@@ -206,6 +207,13 @@ class Properties extends Lumy\Suite\Cli{
         catch(Exception $e){
             $this->check("Set an option: ".$e->getMessage(),false);
         }
+        try{
+            $this->c['d']=33;
+            $this->check("Set an non-yet-defined option",true);
+        }
+        catch(Exception $e){
+            $this->check("Set an non-yet-defined option: ".$e->getMessage(),false);
+        }
         // Get
         try{
             $this->c[''];
@@ -230,7 +238,7 @@ class Properties extends Lumy\Suite\Cli{
         // Isset
         $this->check('Non-locked option is set',isset($this->c['a']));
         $this->check('Locked option is set',isset($this->c['b']));
-        return 12;
+        return 13;
     }
     
     protected function testConstructor(){

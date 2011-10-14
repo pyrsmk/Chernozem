@@ -5,7 +5,7 @@ namespace Chernozem;
 /*
     Properties-oriented dependency injection manager
     
-    Version : 1.0.0
+    Version : 1.0.1
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -61,7 +61,7 @@ abstract class Properties implements \ArrayAccess{
             throw new \Exception("'$name' option is locked");
         }
         // Verify option type
-        if(($type1=gettype($this->$name))!=($type2=gettype($value))){
+        if(($type1=gettype($this->$name))!=($type2=gettype($value)) && $type1!='NULL'){
             throw new \Exception("Bad '$name' option's value type, $type1 expected but $type2 provided");
         }
         // Register the value
