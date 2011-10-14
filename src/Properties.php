@@ -5,7 +5,7 @@ namespace Chernozem;
 /*
     Properties-oriented dependency injection manager
     
-    Version : 1.0.1
+    Version : 1.0.2
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -34,7 +34,8 @@ abstract class Properties implements \ArrayAccess{
             boolean
     */
     public function offsetExists($name){
-        return property_exists($this,$this->__formatOptionName($name)) || property_exists($this,'_'.$this->__formatOptionName($name));
+        $name=(string)$name;
+        return property_exists($this,$name) || property_exists($this,'_'.$name);
     }
     
     /*
@@ -51,14 +52,16 @@ abstract class Properties implements \ArrayAccess{
     */
     public function offsetSet($name,$value){
         // Format
-        $name=$this->__formatOptionName($name);
-        // Verify option existence
-        if(!$this->offsetExists($name)){
-            throw new \Exception("'$name' option does not exist");
-        }
+        $name=(string)$name;
         // Verify if locked
         if(property_exists($this,'_'.$name)){
             throw new \Exception("'$name' option is locked");
+        }
+        else{
+            // Verify option existence
+            if(!property_exists($this,$name)){
+                throw new \Exception("'$name' option does not exist");
+            }
         }
         // Verify option type
         if(($type1=gettype($this->$name))!=($type2=gettype($value)) && $type1!='NULL'){
@@ -82,10 +85,16 @@ abstract class Properties implements \ArrayAccess{
     */
     public function offsetGet($name){
         // Format
-        $name=$this->__formatOptionName($name);
-        // Verify option existence
-        if(!$this->offsetExists($name)){
-            throw new \Exception("'$name' option doesn't exist");
+        $name=(string)$name;
+        // Verify if locked
+        if(property_exists($this,'_'.$name)){
+            $name='_'.$name;
+        }
+        else{
+            // Verify option existence
+            if(!property_exists($this,$name)){
+                throw new \Exception("'$name' option does not exist");
+            }
         }
         // Get the value
         return $this->$name;
@@ -102,31 +111,6 @@ abstract class Properties implements \ArrayAccess{
     */
     public function offsetUnset($name){
         throw new \Exception("Unset behavior is disabled");
-    }
-    
-    /*
-        Verify and format an option name
-
-        Parameters
-            string $name    : the option name
-
-        Return
-            string          : the formatted option name
-
-        Throw
-            Exception       : if an option name is an empty string
-            Exception       : if the option name type is invalid
-    */
-    protected function __formatOptionName($name){
-        if(is_string($name)){
-            if($name){
-                return $name;
-            }
-            else{
-                throw new \Exception("Option name can't be empty");
-            }
-        }
-        throw new \Exception("Option name must be a string");
     }
 
 }
