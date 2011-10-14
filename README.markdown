@@ -8,7 +8,7 @@ Dependency injection is a design pattern to make better encapsulation of externa
 Notes about the 0.x branch
 ==========================
 
-Chernozem 1.x is __NOT__ compatible at all with Chernozem 0.x (the last is 0.7.1).
+Chernozem 1.x is __NOT__ compatible at all with Chernozem 0.x (the last is 0.7.1). The 1.x branch is a complete rewrite to decentralized the container and the properties behavior which don't have the same goal and the same needs (so, the `Chernozem\Properties` manager is about three times faster).
 
 With Chernozem 0.x, serializing and unserializing closures was natively included into the project. From now, you will must do that by yourself with the `serialize.php` class from the [Funktions](https://github.com/pyrsmk/Funktions) project. Also, filters have been dropped.
 
@@ -57,9 +57,11 @@ This example is not that obvious but, as you can see, you're able to identify yo
 
 `Chernozem\Container` implements two other interfaces: `Countable` and `Iterator`. That means you can use the `count()` PHP function to know how many values are into the container and the `foreach()` structure control to iterate over your Chernozem objects.
 
-One last thing, `Chernozem\Container` has a `toArray()` method to retrieve all the container values:
+If you want to retrieve all values as an array, use the `toArray()` method:
 
     var_dump($container->toArray());
+
+One last thing. For performance purposes, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
 
 Chernozem\Properties
 ====================
@@ -83,7 +85,7 @@ For the `ArrayAccess` behavior, only strings are allowed as keys. But here's the
     // Set a locked property will throw an exception
     $container['bar']=72;
 
-To handle internal variables and to separate them from the `Chernozem\Properties` scope, just prefix their names with some underscores:
+As you can see, locked variables are prefixed with an underscore. To handle internal variables and to separate them from the `Chernozem\Properties` scope, just prefix their names with two or more underscores:
 
     // Will throw an exception since $__foobar is out of the scope
     echo $container['foobar'];
