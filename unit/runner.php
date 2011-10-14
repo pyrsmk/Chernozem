@@ -16,7 +16,7 @@ class A extends Chernozem\Container{}
 
 class B extends Chernozem\Properties{
     protected $a=72;
-    protected $_b;
+    protected $_b=7;
     protected $__c;
     protected $d;
 }
@@ -235,10 +235,16 @@ class Properties extends Lumy\Suite\Cli{
         catch(Exception $e){
             $this->check("Get an option: ".$e->getMessage(),false);
         }
+        try{
+            $this->check("Get a locked option",$this->c['b']==7);
+        }
+        catch(Exception $e){
+            $this->check("Get a locked option: ".$e->getMessage(),false);
+        }
         // Isset
         $this->check('Non-locked option is set',isset($this->c['a']));
         $this->check('Locked option is set',isset($this->c['b']));
-        return 13;
+        return 14;
     }
     
     protected function testConstructor(){
