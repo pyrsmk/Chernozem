@@ -7,6 +7,7 @@ class C extends \Chernozem{
     protected $d;
     public function __construct($values=array()){
         $this->__traversable=false;
+        $this->__nullable=true;
         parent::__construct($values);
     }
 }

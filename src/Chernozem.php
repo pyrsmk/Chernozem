@@ -3,7 +3,7 @@
 /*
     Dependency injection container
     
-    Version : 2.0.0
+    Version : 2.0.1
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -20,6 +20,7 @@ abstract class Chernozem implements ArrayAccess,Iterator,Countable{
     protected $__container  = true;
     protected $__properties = true;
     protected $__traversable= true;
+    protected $__nullable   = false;
     
     /*
         Constructor
@@ -152,11 +153,13 @@ abstract class Chernozem implements ArrayAccess,Iterator,Countable{
             return $this->__values[$key];
         }
         // Boom!
-        if(is_string($key)){
-            throw new Exception("Unable to return '$key' value");
-        }
-        else{
-            throw new Exception("Unable to return a value");
+        if(!$this->__nullable){
+            if(is_string($key)){
+                throw new Exception("Unable to return '$key' value");
+            }
+            else{
+                throw new Exception("Unable to return a value");
+            }
         }
     }
     

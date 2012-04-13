@@ -1,4 +1,4 @@
-Chernozem 2.0.0
+Chernozem 2.0.1
 ===============
 
 Chernozem is a dependency injection container.
