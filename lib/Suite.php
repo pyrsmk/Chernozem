@@ -5,14 +5,18 @@ namespace Lumy;
 /*
     An ease of use unit testing suite
 
-    Author
-        Aurélien Delogu (dev@dreamysource.fr)
+    Version : 0.3.2
+    Author  : Aurélien Delogu (dev@dreamysource.fr)
+    Site    : https://github.com/pyrsmk/Lumy
+    License : MIT
 */
 abstract class Suite{
     
     /*
-        int $_runned: the number of runned checks in one test
+        string $_name   : the suite name
+        int $_runned    : the number of runned checks in one test
     */
+    protected $_name;
     protected $_runned;
     
     /*
@@ -22,21 +26,40 @@ abstract class Suite{
             Lumy\Suite
     */
     public function run(){
+        // Get suite name
+        $name=get_class($this);
+        if($pos=strrpos($name,'\\')){
+            ++$pos;
+        }
+        $this->_name=substr(str_replace('_',' ',$name),$pos);
+        // Run before routines
         $this->_beforeSuite();
-        // Browse tests
+        // Pre-browse
+        $methods=array();
         foreach(get_class_methods($this) as $method){
-            // Verify the method name
-            if(strpos($method,'test')!==0){
-                continue;
+            if(preg_match('#^test([a-zA-Z_]+)(\d*)$#',$method,$matches)){
+                $value=array($matches[0],str_replace('_',' ',$matches[1]));
+                if(($index=$matches[2])!=''){
+                    $methods[$index]=$value;
+                }
+                else{
+                    $methods[]=$value;
+                }
             }
+        }
+        ksort($methods);
+        // Browse tests
+        foreach($methods as $method){
+            list($method,$name)=$method;
             // Init the test
             $this->_runned=0;
-            $this->_displayTestName((string)substr($method,4));
+            $this->_displayTestName($name);
             // Run the test
             $expected=$this->$method();
             // Close the test
             $this->_displayTestExpectations($this->_runned,(int)$expected);
         }
+        // Run after routines
         $this->_afterSuite();
         return $this;
     }
@@ -54,9 +77,15 @@ abstract class Suite{
     public function check($description,$result){
         ++$this->_runned;
         if((bool)$result){
+            if(!$description){
+                $description='Passed';
+            }
             $this->_checkPassed($description);
         }
         else{
+            if(!$description){
+                $description='Failed';
+            }
             $this->_checkFailed($description);
         }
         return $this;

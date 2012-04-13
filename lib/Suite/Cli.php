@@ -15,7 +15,7 @@ class Cli extends \Lumy\Suite{
         Triggered before running the suite
     */
     protected function _beforeSuite(){
-        echo "\n  \033[1;33m".get_class($this)."\n\n";
+        echo "\n  \033[1;33m".$this->_name."\n\n";
     }
     
     /*

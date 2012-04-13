@@ -24,7 +24,7 @@ class Http extends \Lumy\Suite{
         Triggered before running the suite
     */
     protected function _beforeSuite(){
-        echo "<$this->_title_markup>".get_class($this)."</$this->_title_markup>";
+        echo "<$this->_title_markup>".$this->_name."</$this->_title_markup>";
     }
 
     /*

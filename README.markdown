@@ -1,23 +1,32 @@
-Chernozem
-=========
+Chernozem 2.0.0
+===============
 
-Chernozem is a collection of dependency injection managers.
+Chernozem is a dependency injection container.
 
-Dependency injection is a design pattern to make better encapsulation of external objects into another object. Fabien Potencier has written an article about that, I advise you to read it: http://fabien.potencier.org/article/11/what-is-dependency-injection. Chernozem classes are array dependency injection containers. That means you can inject values (configure your object) with an array style. It is very helpful because extending thoses classes will drop much of your setters/getters and will provide a robust implementation. For a good example, let's take a look to the [Lumy](https://github.com/pyrsmk/Lumy) framework project, which has heavy Chernozem integration.
+Dependency injection is a design pattern to make better encapsulation of external objects into another object. Fabien Potencier has written an article about that, I advise you to read it: http://fabien.potencier.org/article/11/what-is-dependency-injection.
 
-Notes about the 0.x branch
-==========================
+With dependency injection containers, you can inject values (configure your object) with an array style. It is very helpful because extending thoses classes will drop much of your setters/getters and will provide a robust implementation. For a good example, let's take a look to the [Lumy](https://github.com/pyrsmk/Lumy) framework project, which has heavy Chernozem integration.
 
-Chernozem 1.x is __NOT__ compatible at all with Chernozem 0.x (the last is 0.7.1). The 1.x branch is a complete rewrite to decentralized the container and the properties behavior which don't have the same goal and the same needs (so, the `Chernozem\Properties` manager is about three times faster).
+Basics
+======
 
-With Chernozem 0.x, serializing and unserializing closures was natively included into the project. From now, you will must do that by yourself with the `serialize.php` class from the [Funktions](https://github.com/pyrsmk/Funktions) project. Also, filters have been dropped.
+There're two behaviors into Chernozem: container mode and properties mode. The container mode can stock values regardless of what they are and what they mean. And the properties mode lets you define pre-existing object properties.
 
-That said, let's go for some explanations!
+You can modify those behaviors by set, in a Chernozem child constructor, some internal properties.
 
-Chernozem\Container
-===================
+    public function __construct(){
+        // False to disable properties behavior
+        $this->__properties=true;
+        // False to disable container behavior
+        $this->__container=true;
+        // False to make Chernozem non traversable by foreach()
+        $this->__traversable=true;
+    }
 
-Chernozem is shipped with two class which have their own purpose. With `Chernozem\Container`, each value is totally manipulable by the user, contrary to `Chernozem\Properties` where the values are intrinsically linked to the object properties and can be locked to prevent rewrites. Here how `Chernozem\Container` works:
+All those internal variables are enabled by default.
+
+Container behavior
+==================
 
     // Instanciate a Chernozem child
     $container=new SampleClass;
@@ -35,7 +44,7 @@ Chernozem is shipped with two class which have their own purpose. With `Chernoze
         echo 'foo does not exists';
     }
 
-As you see, it supports all basic array operations. And numeric keys too, even the [] syntax! Awesome!
+As you see, it supports all basic array operations, numeric keys too and even the [] syntax:
 
     $container[]=72;
 
@@ -55,28 +64,24 @@ Another great functionnality:
 
 This example is not that obvious but, as you can see, you're able to identify your values by an object.
 
-`Chernozem\Container` implements two other interfaces: `Countable` and `Iterator`. That means you can use the `count()` PHP function to know how many values are into the container and the `foreach()` structure control to iterate over your Chernozem objects.
+Chernozem implements two other interfaces: `Countable` and `Iterator`. That means you can use the `count()` PHP function to know how many values are into the container and the `foreach()` structure control to iterate over your Chernozem objects.
 
 If you want to retrieve all values as an array, use the `toArray()` method:
 
     var_dump($container->toArray());
 
-One last thing. For performance purposes, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
+One last thing. For performance purpose, from a Chernoze child, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
 
-Chernozem\Properties
-====================
+Properties behavior
+===================
 
-As it's previously said, `Chernozem\Properties` has its values linked to the child object properties, so its working is very different from its brother. First of all, you _can't_ pass a `Traversable` object to the constructor but just an array:
+In this mode, you can use properties from your objects with the following rules:
 
-    $container=new SampleClass(array(
-        'foo'       => false,
-        'bar'       => 0.758,
-        'foobar'    => function(){
-            return 'something';
-        }
-    ));
+- `$var` is editable
+- `$_var` is not but is still accessible
+- `$__var` should be use for specific internal variables
 
-For the `ArrayAccess` behavior, only strings are allowed as keys. But here's the most interesting part:
+Only strings are allowed as keys. But here's the most interesting part:
 
     // Access to '$foo' property
     echo $container['foo'];
@@ -84,19 +89,19 @@ For the `ArrayAccess` behavior, only strings are allowed as keys. But here's the
     echo $container['bar'];
     // Set a locked property will throw an exception
     $container['bar']=72;
-
-As you can see, locked variables are prefixed with an underscore. To handle internal variables and to separate them from the `Chernozem\Properties` scope, just prefix their names with two or more underscores:
-
     // Will throw an exception since $__foobar is out of the scope
     echo $container['foobar'];
-
-And that's all. And I think you can easily understand why `Chernozem\Properties` doesn't implement `Countable`, `Iterator` or `toArray()`.
 
 Last remarks
 ============
 
-You can't chain arrays to modify or retrieve a value with Chernozem class, this is due to a PHP limitation with `ArrayAccess` (in fact, Chernozem 0.6 did that but with huge performance costs). So, you will must do:
+You can't chain arrays to modify or retrieve a value with Chernozem class, this is due to a PHP limitation with `ArrayAccess`. So, you''ll must do:
 
     $foo=$c['foo'];
     $foo['bar']=42;
     $c['foo']=$foo;
+
+License
+=======
+
+Chernozem is published under the MIT license. Feel free to fork it ;)
