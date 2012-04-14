@@ -10,25 +10,43 @@ With dependency injection containers, you can inject values (configure your obje
 Basics
 ======
 
-There're two behaviors into Chernozem: container mode and properties mode. The container mode can stock values regardless of what they are and what they mean. And the properties mode lets you define pre-existing object properties.
+There're two behaviors into Chernozem: container and properties. The container side can stock values regardless of what they are and what they mean. The properties side lets you define pre-existing object properties.
 
-You can modify those behaviors by set, in a Chernozem child constructor, some internal properties.
+You can modify those behaviors by set, in a Chernozem child constructor, some internal properties (values set are default values):
 
-    public function __construct(){
-        // False to disable properties behavior
-        $this->__properties=true;
-        // False to disable container behavior
-        $this->__container=true;
-        // False to make Chernozem non traversable by foreach()
-        $this->__traversable=true;
+    class SampleClass extends Chernozem{
+    
+        public function __construct(){
+            // False to disable properties behavior
+            $this->__properties=true;
+            // False to disable container behavior
+            $this->__container=true;
+            // False to make Chernozem non traversable by foreach()
+            $this->__traversable=true;
+            // True to not send an exception when retrieving a non existing value
+            $this->__nullable=false;
+        }
+        
     }
 
-All those internal variables are enabled by default.
+You can pass an array or a `Traversable` object to the constructor to add values directly into your container (or as properties):
+
+    $container=new SampleClass(array(
+        'foo'       => false,
+        'bar'       => 0.758,
+        'foobar'    => function(){
+            return 'something';
+        }
+    ));
+    // Print 0.758
+    echo $container['bar'];
+
+Properties behavior having priority over container behavior. That means that if you insert a value with a key that is not managed by the properties behavior, then that value will be inserted to the container (but if that container is disabled, Chernozem will throw an exception). As well, if you retrieve a value that exists with both behaviors then the returned value will be the properties one.
 
 Container behavior
 ==================
 
-    // Instanciate a Chernozem child
+    // Instantiate a Chernozem child
     $container=new SampleClass;
     // Add a value
     $container['foo']='bar';
@@ -48,29 +66,25 @@ As you see, it supports all basic array operations, numeric keys too and even th
 
     $container[]=72;
 
-You can also pass an array or a `Traversable` object to the constructor to add values directly into your container:
+Furthermore, you can use object keys:
 
-    $container=new SampleClass(array(
-        'foo'       => false,
-        'bar'       => 0.758,
-        'foobar'    => function(){
-            return 'something';
-        }
-    ));
-
-Another great functionnality:
-
-    $container[new stdClass()]=72;
-
-This example is not that obvious but, as you can see, you're able to identify your values by an object.
+    $object=new stdClass();
+    $container[$object]=72;
+    // Print 72
+    echo $container[$object];
 
 Chernozem implements two other interfaces: `Countable` and `Iterator`. That means you can use the `count()` PHP function to know how many values are into the container and the `foreach()` structure control to iterate over your Chernozem objects.
+
+    // Print the number of elements in the container
+    echo count($container);
+    // Iterate
+    foreach($container as $key=>$value){
+        echo $value;
+    }
 
 If you want to retrieve all values as an array, use the `toArray()` method:
 
     var_dump($container->toArray());
-
-One last thing. For performance purpose, from a Chernoze child, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
 
 Properties behavior
 ===================
@@ -92,14 +106,18 @@ Only strings are allowed as keys. But here's the most interesting part:
     // Will throw an exception since $__foobar is out of the scope
     echo $container['foobar'];
 
+With the properties mode, you can't unset values, can't use `count()`, `foreach()`. With `Chernozem#toArray()`, no property will be returned, this is just compatible with the container behavior.
+
 Last remarks
 ============
 
-You can't chain arrays to modify or retrieve a value with Chernozem class, this is due to a PHP limitation with `ArrayAccess`. So, you''ll must do:
+You can't chain arrays to modify or retrieve a value with Chernozem class, this is due to a PHP limitation with `ArrayAccess`. So, you'll must do:
 
     $foo=$c['foo'];
     $foo['bar']=42;
     $c['foo']=$foo;
+
+For performance purpose, from a Chernoze child, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
 
 License
 =======
