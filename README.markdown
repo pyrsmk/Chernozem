@@ -5,7 +5,7 @@ Chernozem is a dependency injection container.
 
 Dependency injection is a design pattern to make better encapsulation of external objects into another object. Fabien Potencier has written an article about that, I advise you to read it: http://fabien.potencier.org/article/11/what-is-dependency-injection.
 
-With dependency injection containers, you can inject values (configure your object) with an array style. It is very helpful because extending thoses classes will drop much of your setters/getters and will provide a robust implementation. For a good example, let's take a look to the [Lumy](https://github.com/pyrsmk/Lumy) framework project, which has heavy Chernozem integration.
+With dependency injection containers, you can inject values (configure your object) with an array style. It is very helpful because extending those classes will drop much of your setters/getters and will provide a robust implementation. For a good example, let's take a look to the [Lumy](https://github.com/pyrsmk/Lumy) framework project, which has heavy Chernozem integration.
 
 Basics
 ======
