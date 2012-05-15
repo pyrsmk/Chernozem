@@ -1,9 +1,9 @@
 <?php
 
 /*
-    Dependency injection container
+    An advanced dependency injection container
     
-    Version : 2.0.1
+    Version : 2.2.0
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -11,16 +11,21 @@
 abstract class Chernozem implements ArrayAccess,Iterator,Countable{
 
     /*
-        array $__values     : container values
-        array $__container  : true to enable container mode
-        array $__properties : true to enable properties mode
-        array $__traversable: true if traversable
+        array $__values             : container's values
+        boolean $__container        : true to enable container mode (default: true)
+        boolean $__properties       : true to enable properties mode (default: true)
+        boolean $__traversable      : true if traversable (default: true)
+        boolean $__nullable         : true to not throw an exception if a key doesn't exist (default: false)
+        array $__services           : service list
+        array $__persistent_values  : persistent value list
     */
-    protected $__values     = array();
-    protected $__container  = true;
-    protected $__properties = true;
-    protected $__traversable= true;
-    protected $__nullable   = false;
+    protected $__values             = array();
+    protected $__container          = true;
+    protected $__properties         = true;
+    protected $__traversable        = true;
+    protected $__nullable           = false;
+    protected $__services           = array();
+    protected $__persistent_values  = array();
     
     /*
         Constructor
@@ -44,6 +49,34 @@ abstract class Chernozem implements ArrayAccess,Iterator,Countable{
     */
     public function toArray(){ 
         return $this->__values;
+    }
+    
+    /*
+        Make a closure a service
+        
+        Parameters
+            string, int, object $key
+        
+        Return
+            Chernozem
+    */
+    public function service($key){
+        $this->__services[$this->__formatKey($key)]=1;
+        return $this;
+    }
+    
+    /*
+        Make a service a simple closure (and, by extension, non persistent)
+        
+        Parameters
+            string, int, object $key
+        
+        Return
+            Chernozem
+    */
+    public function unservice($key){
+        unset($this->__services[$this->__formatKey($key)]);
+        return $this;
     }
     
     /*
@@ -133,27 +166,34 @@ abstract class Chernozem implements ArrayAccess,Iterator,Countable{
             mixed
         
         Throw
-            Exception: if unable to set a value
+            Exception: if unable to get a value
     */
     public function offsetGet($key){
         // Properties
         if(is_string($key) && $this->__properties){
             // Property exists
             if(property_exists($this,$key)){
-                return $this->$key;
+                $value=$this->$key;
             }
             // Property locked
             elseif(property_exists($this,'_'.$key)){
                 $key='_'.$key;
-                return $this->$key;
+                $value=$this->$key;
             }
         }
         // Container
         if($this->__container && array_key_exists($key=$this->__formatKey($key),$this->__values)){
-            return $this->__values[$key];
+            $value=$this->__values[$key];
+        }
+        // Service
+        if($value instanceof Closure && $this->__services[$key]){
+            if(is_null($val=&$this->__persistent_values[$key])){
+                $val=$value();
+            }
+            $value=$val;
         }
         // Boom!
-        if(!$this->__nullable){
+        if($value===null && !$this->__nullable){
             if(is_string($key)){
                 throw new Exception("Unable to return '$key' value");
             }
@@ -161,6 +201,7 @@ abstract class Chernozem implements ArrayAccess,Iterator,Countable{
                 throw new Exception("Unable to return a value");
             }
         }
+        return $value;
     }
     
     /*
