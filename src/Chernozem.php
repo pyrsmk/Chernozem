@@ -16,6 +16,7 @@ abstract class Chernozem implements ArrayAccess,Iterator,Countable{
         boolean $__properties       : true to enable properties mode (default: true)
         boolean $__traversable      : true if traversable (default: true)
         boolean $__nullable         : true to not throw an exception if a key doesn't exist (default: false)
+        boolean $__locked           : true to lock object edition (default: false)
         array $__services           : service list
         array $__persistent_values  : persistent value list
     */
