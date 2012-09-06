@@ -115,6 +115,7 @@ Services
 
 Closures (as values) can be setted as services. That means the closure will be automatically launched when the user retrieves it. It's really useful to initialize objects on demand. When initialized, the object will be saved as the real value of the specified key.  Here's a quick example with [Twig](http://twig.sensiolabs.org):
 
+    // Set initialization closure for Twig
     $container['twig']=function(){
         require_once '/path/to/lib/Twig/Autoloader.php';
         Twig_Autoloader::register();
@@ -125,6 +126,12 @@ Closures (as values) can be setted as services. That means the closure will be a
         );
         return $twig;
     };
+    // Define that closure as service
+    $container->service('twig');
+
+And to remove the `twig` closure as service:
+
+    $container->unservice('twig');
 
 Last remarks
 ============
@@ -135,13 +142,13 @@ You can't chain arrays to modify or retrieve a value with Chernozem class, this 
     $foo['bar']=42;
     $c['foo']=$foo;
 
-For performance purpose, from a Chernozem child, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
-
 Also note that you can pass an object as key:
 
     $container[$object]=99;
     // Echoes 99
     echo $container[$object];
+
+For performance purpose, from a Chernozem child, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
 
 License
 =======
