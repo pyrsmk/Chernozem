@@ -15,7 +15,7 @@ There're two behaviors into Chernozem: container and properties. The container s
 You can modify those behaviors by set, in a Chernozem child constructor, some internal properties (values set are default values):
 
     class SampleClass extends Chernozem{
-    
+
         public function __construct(){
             // False to disable properties behavior
             $this->__properties=true;
@@ -28,7 +28,7 @@ You can modify those behaviors by set, in a Chernozem child constructor, some in
             // True to lock, the object will not be editable anymore
             $this->__locked=false;
         }
-        
+
     }
 
 You can pass an array or a `Traversable` object to the constructor to add values directly into your container (or as properties):
@@ -110,6 +110,22 @@ Only strings are allowed as keys. But here's the most interesting part:
 
 With the properties mode, you can't unset values, can't use `count()`, `foreach()`. With `Chernozem#toArray()`, no property will be returned, this is just compatible with the container behavior.
 
+Services
+========
+
+Closures (as values) can be setted as services. That means the closure will be automatically launched when the user retrieves it. It's really useful to initialize objects on demand. When initialized, the object will be saved as the real value of the specified key.  Here's a quick example with [Twig](http://twig.sensiolabs.org):
+
+    $container['twig']=function(){
+        require_once '/path/to/lib/Twig/Autoloader.php';
+        Twig_Autoloader::register();
+        $loader=new Twig_Loader_Filesystem('/path/to/templates');
+        $twig=new Twig_Environment(
+            $loader,
+            array('cache'=>'/path/to/compilation_cache')
+        );
+        return $twig;
+    };
+
 Last remarks
 ============
 
@@ -120,6 +136,12 @@ You can't chain arrays to modify or retrieve a value with Chernozem class, this 
     $c['foo']=$foo;
 
 For performance purpose, from a Chernozem child, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
+
+Also note that you can pass an object as key:
+
+    $container[$object]=99;
+    // Echoes 99
+    echo $container[$object];
 
 License
 =======
