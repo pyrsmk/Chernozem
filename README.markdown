@@ -1,4 +1,4 @@
-Chernozem 2.0.1
+Chernozem 2.3.0
 ===============
 
 Chernozem is a dependency injection container.
@@ -25,6 +25,8 @@ You can modify those behaviors by set, in a Chernozem child constructor, some in
             $this->__traversable=true;
             // True to not send an exception when retrieving a non existing value
             $this->__nullable=false;
+            // True to lock, the object will not be editable anymore
+            $this->__locked=false;
         }
         
     }
@@ -117,7 +119,7 @@ You can't chain arrays to modify or retrieve a value with Chernozem class, this 
     $foo['bar']=42;
     $c['foo']=$foo;
 
-For performance purpose, from a Chernoze child, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
+For performance purpose, from a Chernozem child, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
 
 License
 =======
