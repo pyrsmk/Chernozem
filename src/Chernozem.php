@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container
     
-    Version : 2.2.0
+    Version : 2.3.0
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -24,6 +24,7 @@ abstract class Chernozem implements ArrayAccess,Iterator,Countable{
     protected $__properties         = true;
     protected $__traversable        = true;
     protected $__nullable           = false;
+    protected $__locked             = false;
     protected $__services           = array();
     protected $__persistent_values  = array();
     
@@ -61,6 +62,9 @@ abstract class Chernozem implements ArrayAccess,Iterator,Countable{
             Chernozem
     */
     public function service($key){
+        if($this->__locked){
+            throw new Exception("Object is locked, can't set '$key' as service");
+        }
         $this->__services[$this->__formatKey($key)]=1;
         return $this;
     }
@@ -75,6 +79,9 @@ abstract class Chernozem implements ArrayAccess,Iterator,Countable{
             Chernozem
     */
     public function unservice($key){
+        if($this->__locked){
+            throw new Exception("Object is locked, can't unset '$key' as service");
+        }
         unset($this->__services[$this->__formatKey($key)]);
         return $this;
     }
@@ -115,6 +122,9 @@ abstract class Chernozem implements ArrayAccess,Iterator,Countable{
             Exception: if unable to set the value
     */
     public function offsetSet($key,$value){
+        if($this->__locked){
+            throw new Exception("Object is locked, can't set '$key' value");
+        }
         // Init flag
         $registered=false;
         // Properties
