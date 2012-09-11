@@ -43,7 +43,13 @@ You can pass an array or a `Traversable` object to the constructor to add values
     // Print 0.758
     echo $container['bar'];
 
-Properties behavior having priority over container behavior. That means that if you insert a value with a key that is not managed by the properties behavior, then that value will be inserted to the container (but if that container is disabled, Chernozem will throw an exception). As well, if you retrieve a value that exists with both behaviors then the returned value will be the properties one.
+Properties behavior having priority over container behavior. That means that if you insert a value with a key that is not managed by the properties behavior, then that value will be inserted to the container (but if that container is disabled, Chernozem will throw an exception). As well, if you retrieve a value that exists with both behaviors (because of inserting it internally) then the returned value will be the properties one.
+
+Also, you can pass an object as key:
+
+    $container[$object]=99;
+    // Echoes 99
+    echo $container[$object];
 
 Container behavior
 ==================
@@ -110,6 +116,8 @@ Only strings are allowed as keys. But here's the most interesting part:
 
 With the properties mode, you can't unset values, can't use `count()`, `foreach()`. With `Chernozem#toArray()`, no property will be returned, this is just compatible with the container behavior.
 
+Please note that value types are verified on-the-fly when a value is set. Per example, if you want to define the `foo` value, which already have the value `72` (an integer), with `hello!` then Chernozem will throw an exception because the new value has the wrong type.
+
 Services
 ========
 
@@ -141,12 +149,6 @@ You can't chain arrays to modify or retrieve a value with Chernozem class, this 
     $foo=$c['foo'];
     $foo['bar']=42;
     $c['foo']=$foo;
-
-Also note that you can pass an object as key:
-
-    $container[$object]=99;
-    // Echoes 99
-    echo $container[$object];
 
 For performance purpose, from a Chernozem child, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
 
