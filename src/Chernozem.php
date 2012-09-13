@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container
 
-    Version : 2.3.0
+    Version : 2.4.0
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -114,35 +114,27 @@ abstract class Chernozem implements ArrayAccess, Iterator, Countable{
         Set a value
 
         Parameters
-            string, int, object $key
+            mixed $key
             mixed $value
 
         Throw
-            Exception: if the option is locked
-            Exception: if the provided option name's type is invalid
+            Exception: if the object is locked
             Exception: if unable to set the value
     */
     public function offsetSet($key,$value){
         if($this->__locked){
             throw new Exception("Object is locked, can't set '$key' value");
         }
-        // Init flag
-        $registered=false;
         // Properties
         if(is_string($key) && $this->__properties){
             // Property exists
             if(property_exists($this,$key)){
-                // Verify option type
-                if(($type1=gettype($this->$key))!=($type2=gettype($value)) && $type1!='NULL'){
-                    throw new Exception("Bad '$key' option's value type, $type1 expected but $type2 provided");
-                }
-                // Register the value
                 $this->$key=$value;
-                $registered=true;
+                return;
             }
             // Property locked
             elseif(property_exists($this,'_'.$key)){
-                throw new Exception("'$key' option is locked");
+                throw new Exception("'$key' value is locked");
             }
         }
         // Container
@@ -151,19 +143,16 @@ abstract class Chernozem implements ArrayAccess, Iterator, Countable{
             if($key===null){
                 $key=count($this->__values);
             }
-            $key=$this->__formatKey($key);
             // Register the value
-            $this->__values[$key]=$value;
-            $registered=true;
+            $this->__values[$this->__formatKey($key)]=$value;
+            return;
         }
         // Boom!
-        if(!$registered){
-            if(is_string($key)){
-                throw new Exception("Unable to set '$key' value");
-            }
-            else{
-                throw new Exception("Unable to set a value");
-            }
+        if(is_string($key)){
+            throw new Exception("Unable to set '$key' value");
+        }
+        else{
+            throw new Exception("Unable to set a value");
         }
     }
 
@@ -286,37 +275,19 @@ abstract class Chernozem implements ArrayAccess, Iterator, Countable{
     }
 
     /*
-        Verify and format a key
+        Format a key
 
         Parameters
-            string, int, object $key
+            mixed $key
 
         Return
-            string, int
-
-        Throw
-            Exception: if a key is an empty string
-            Exception: if the key type is invalid
+            mixed
     */
     protected function __formatKey($key){
-        // String
-        if(is_string($key)){
-            if($key){
-                return $key;
-            }
-            else{
-                throw new Exception("Key string can't be empty");
-            }
-        }
-        // Integer
-        elseif(is_int($key)){
-            return $key;
-        }
-        // Object
-        elseif(is_object($key)){
+        if(is_object($key)){
             return spl_object_hash($key);
         }
-        throw new Exception("Key must be a string, an integer or an object");
+        return $key;
     }
 
 }

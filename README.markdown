@@ -1,4 +1,4 @@
-Chernozem 2.3.0
+Chernozem 2.4.0
 ===============
 
 Chernozem is a dependency injection container.
@@ -115,8 +115,6 @@ Only strings are allowed as keys. But here's the most interesting part:
     echo $container['foobar'];
 
 With the properties mode, you can't unset values, can't use `count()`, `foreach()`. With `Chernozem#toArray()`, no property will be returned, this is just compatible with the container behavior.
-
-Please note that value types are verified on-the-fly when a value is set. Per example, if you want to define the `foo` value, which already have the value `72` (an integer), with `hello!` then Chernozem will throw an exception because the new value has the wrong type.
 
 Services
 ========

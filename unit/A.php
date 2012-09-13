@@ -17,7 +17,7 @@ class Container extends \Lumy\Suite\Cli{
         catch(\Exception $e){
             $this->check('Built with an array: '.$e->getMessage(),false);
         }
-        try{        
+        try{
             $this->c=new A($this->c);
             $this->check('Built with a traversable object',$this->c['test']=='test');
         }
@@ -49,13 +49,6 @@ class Container extends \Lumy\Suite\Cli{
         }
         catch(\Exception $e){
             $this->check('Set with a string key: '.$e->getMessage(),false);
-        }
-        try{
-            $this->c['']=33;
-            $this->check("Can't set with an empty string key",false);
-        }
-        catch(\Exception $e){
-            $this->check("Can't set with an empty string key",true);
         }
         try{
             $this->c[$this->c]='bar';
@@ -95,7 +88,7 @@ class Container extends \Lumy\Suite\Cli{
         // Unset
         unset($this->c['test']);
         $this->check('Unset',!isset($this->c['test']));
-        return 11;
+        return 10;
     }
 
     protected function testVarious(){

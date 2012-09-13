@@ -42,13 +42,6 @@ class Container_and_properties extends \Lumy\Suite\Cli{
             $this->check('Set with a string key: '.$e->getMessage(),false);
         }
         try{
-            $this->c['']=33;
-            $this->check("Can't set with an empty string key",false);
-        }
-        catch(\Exception $e){
-            $this->check("Can't set with an empty string key",true);
-        }
-        try{
             $this->c[$this->c]='bar';
             $this->check('Set with an object key',true);
         }
@@ -67,13 +60,6 @@ class Container_and_properties extends \Lumy\Suite\Cli{
         }
         catch(\Exception $e){
             $this->check('Get with a string key: '.$e->getMessage(),false);
-        }
-        try{
-            $this->c[''];
-            $this->check("Can't get with an empty string key",false);
-        }
-        catch(\Exception $e){
-            $this->check("Can't get with an empty string key",true);
         }
         try{
             $this->check('Get with an object key',$this->c[$this->c]=='bar');
@@ -116,7 +102,7 @@ class Container_and_properties extends \Lumy\Suite\Cli{
         // Unset
         unset($this->c['test']);
         $this->check('Unset',!isset($this->c['test']));
-        return 17;
+        return 15;
     }
 
     protected function testVarious(){
