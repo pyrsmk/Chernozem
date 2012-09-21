@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container
 
-    Version : 2.4.0
+    Version : 2.4.1
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -140,7 +140,7 @@ abstract class Chernozem implements ArrayAccess, Iterator, Countable{
         // Container
         if($this->__container){
             // Format
-            if($key===null){
+            if($key===''){
                 $key=count($this->__values);
             }
             // Register the value
