@@ -1,4 +1,4 @@
-Chernozem 2.4.0
+Chernozem 2.4.2
 ===============
 
 Chernozem is a dependency injection container.
@@ -14,6 +14,7 @@ There're two behaviors into Chernozem: container and properties. The container s
 
 You can modify those behaviors by set, in a Chernozem child constructor, some internal properties (values set are default values):
 
+```php
     class SampleClass extends Chernozem{
 
         public function __construct(){
@@ -30,9 +31,11 @@ You can modify those behaviors by set, in a Chernozem child constructor, some in
         }
 
     }
+```
 
 You can pass an array or a `Traversable` object to the constructor to add values directly into your container (or as properties):
 
+```php
     $container=new SampleClass(array(
         'foo'       => false,
         'bar'       => 0.758,
@@ -42,18 +45,22 @@ You can pass an array or a `Traversable` object to the constructor to add values
     ));
     // Print 0.758
     echo $container['bar'];
+```
 
 Properties behavior having priority over container behavior. That means that if you insert a value with a key that is not managed by the properties behavior, then that value will be inserted to the container (but if that container is disabled, Chernozem will throw an exception). As well, if you retrieve a value that exists with both behaviors (because of inserting it internally) then the returned value will be the properties one.
 
 Also, you can pass an object as key:
 
+```php
     $container[$object]=99;
     // Echoes 99
     echo $container[$object];
+```
 
 Container behavior
 ==================
 
+```php
     // Instantiate a Chernozem child
     $container=new SampleClass;
     // Add a value
@@ -69,30 +76,39 @@ Container behavior
     if(!isset($container['foo'])){
         echo 'foo does not exists';
     }
+```
 
 As you see, it supports all basic array operations, numeric keys too and even the [] syntax:
 
+```php
     $container[]=72;
+```
 
 Furthermore, you can use object keys:
 
+```php
     $object=new stdClass();
     $container[$object]=72;
     // Print 72
     echo $container[$object];
+```
 
 Chernozem implements two other interfaces: `Countable` and `Iterator`. That means you can use the `count()` PHP function to know how many values are into the container and the `foreach()` structure control to iterate over your Chernozem objects.
 
+```php
     // Print the number of elements in the container
     echo count($container);
     // Iterate
     foreach($container as $key=>$value){
         echo $value;
     }
+```
 
 If you want to retrieve all values as an array, use the `toArray()` method:
 
+```php
     var_dump($container->toArray());
+```
 
 Properties behavior
 ===================
@@ -105,6 +121,7 @@ In this mode, you can use properties from your objects with the following rules:
 
 Only strings are allowed as keys. But here's the most interesting part:
 
+```php
     // Access to '$foo' property
     echo $container['foo'];
     // Access to locked $_bar property
@@ -113,6 +130,7 @@ Only strings are allowed as keys. But here's the most interesting part:
     $container['bar']=72;
     // Will throw an exception since $__foobar is out of the scope
     echo $container['foobar'];
+```
 
 With the properties mode, you can't unset values, can't use `count()`, `foreach()`. With `Chernozem#toArray()`, no property will be returned, this is just compatible with the container behavior.
 
@@ -121,6 +139,7 @@ Services
 
 Closures (as values) can be setted as services. That means the closure will be automatically launched when the user retrieves it. It's really useful to initialize objects on demand. When initialized, the object will be saved as the real value of the specified key.  Here's a quick example with [Twig](http://twig.sensiolabs.org):
 
+```php
     // Set initialization closure for Twig
     $container['twig']=function(){
         require_once '/path/to/lib/Twig/Autoloader.php';
@@ -134,19 +153,24 @@ Closures (as values) can be setted as services. That means the closure will be a
     };
     // Define that closure as service
     $container->service('twig');
+```
 
 And to remove the `twig` closure as service:
 
+```php
     $container->unservice('twig');
+```
 
 Last remarks
 ============
 
 You can't chain arrays to modify or retrieve a value with Chernozem class, this is due to a PHP limitation with `ArrayAccess`. So, you'll must do:
 
+```php
     $foo=$c['foo'];
     $foo['bar']=42;
     $c['foo']=$foo;
+```
 
 For performance purpose, from a Chernozem child, please use `$this->__values['foo']` to access to the container rather than `$this['foo']`.
 

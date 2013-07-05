@@ -3,7 +3,7 @@
 /*
     An advanced dependency injection container
 
-    Version : 2.4.1
+    Version : 2.4.2
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
@@ -126,7 +126,7 @@ abstract class Chernozem implements ArrayAccess, Iterator, Countable{
             throw new Exception("Object is locked, can't set '$key' value");
         }
         // Properties
-        if(is_string($key) && $this->__properties){
+        if($this->__properties && is_string($key)){
             // Property exists
             if(property_exists($this,$key)){
                 $this->$key=$value;
@@ -139,12 +139,12 @@ abstract class Chernozem implements ArrayAccess, Iterator, Countable{
         }
         // Container
         if($this->__container){
-            // Format
-            if($key===''){
-                $key=count($this->__values);
+            if($key){
+                $this->__values[$this->__formatKey($key)]=$value;
             }
-            // Register the value
-            $this->__values[$this->__formatKey($key)]=$value;
+            else{
+                $this->__values[]=$value;
+            }
             return;
         }
         // Boom!
