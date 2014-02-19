@@ -3,12 +3,12 @@
 /*
     An advanced dependency injection container
 
-    Version : 2.4.2
+    Version : 2.5.0
     Author  : Aurélien Delogu (dev@dreamysource.fr)
     URL     : https://github.com/pyrsmk/Chernozem
     License : MIT
 */
-abstract class Chernozem implements ArrayAccess, Iterator, Countable{
+class Chernozem implements ArrayAccess, Iterator, Countable{
 
     /*
         array $__values             : container's values
