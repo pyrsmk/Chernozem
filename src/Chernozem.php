@@ -1,293 +1,249 @@
 <?php
 
 /*
-    An advanced dependency injection container
+	An advanced dependency injection container
 
-    Version : 2.5.0
-    Author  : Aurélien Delogu (dev@dreamysource.fr)
-    URL     : https://github.com/pyrsmk/Chernozem
-    License : MIT
+	Author
+		Aurélien Delogu (dev@dreamysource.fr)
 */
 class Chernozem implements ArrayAccess, Iterator, Countable{
 
-    /*
-        array $__values             : container's values
-        boolean $__container        : true to enable container mode (default: true)
-        boolean $__properties       : true to enable properties mode (default: true)
-        boolean $__traversable      : true if traversable (default: true)
-        boolean $__nullable         : true to not throw an exception if a key doesn't exist (default: false)
-        boolean $__locked           : true to lock object edition (default: false)
-        array $__services           : service list
-        array $__persistent_values  : persistent value list
-    */
-    protected $__values             = array();
-    protected $__container          = true;
-    protected $__properties         = true;
-    protected $__traversable        = true;
-    protected $__nullable           = false;
-    protected $__locked             = false;
-    protected $__services           = array();
-    protected $__persistent_values  = array();
+	/*
+		array $__chernozem_values			: container's values
+		array $__chernozem_services			: registered service list
+		array $__chernozem_service_values	: service value list
+	*/
+	protected $__chernozem_values		= array();
+	private $__chernozem_services		= array();
+	private $__chernozem_service_values	= array();
 
-    /*
-        Constructor
+	/*
+		Constructor
 
-        Parameters
-            array, object $values: a value list to fill in the container
-    */
-    public function __construct($values=array()){
-        if(is_array($values) or ($values instanceof Traversable)){
-            foreach($values as $name=>$value){
-                $this->offsetSet($name,$value);
-            }
-        }
-    }
+		Parameters
+			array, object $values: a value list to fill in the container
+	*/
+	public function __construct($values=array()){
+		if(is_array($values) or ($values instanceof Traversable)){
+			foreach($values as $name=>$value){
+				$this->offsetSet($name,$value);
+			}
+		}
+	}
 
-    /*
-        Return the contained values
+	/*
+		Return values from the container
 
-        Return
-            array
-    */
-    public function toArray(){
-        return $this->__values;
-    }
+		Return
+			array
+	*/
+	public function toArray(){
+		return $this->__chernozem_values;
+	}
 
-    /*
-        Make a closure a service
+	/*
+		Make a closure a service
 
-        Parameters
-            string, int, object $key
+		Parameters
+			string, int, object $key
 
-        Return
-            Chernozem
-    */
-    public function service($key){
-        if($this->__locked){
-            throw new Exception("Object is locked, can't set '$key' as service");
-        }
-        $this->__services[$this->__formatKey($key)]=1;
-        return $this;
-    }
+		Return
+			Chernozem
+	*/
+	final public function service($key){
+		if(!($this->offsetGet($key) instanceof Closure)){
+			throw new Exception("'$key' value must a closure to be able to set it as a service");
+		}
+		$this->__chernozem_services[$this->__chernozem_format_key($key)]=1;
+		return $this;
+	}
 
-    /*
-        Make a service a simple closure (and, by extension, non persistent)
+	/*
+		Make a service a simple closure
 
-        Parameters
-            string, int, object $key
+		Parameters
+			string, integer, object $key
 
-        Return
-            Chernozem
-    */
-    public function unservice($key){
-        if($this->__locked){
-            throw new Exception("Object is locked, can't unset '$key' as service");
-        }
-        unset($this->__services[$this->__formatKey($key)]);
-        return $this;
-    }
+		Return
+			Chernozem
+	*/
+	final public function unservice($key){
+		unset($this->__chernozem_services[$this->__chernozem_format_key($key)]);
+		return $this;
+	}
 
-    /*
-        Verify if the option exists
+	/*
+		Verify if the key exists
 
-        Parameters
-            string, int, object $key
+		Parameters
+			string, integer, object $key
 
-        Return
-            boolean
-    */
-    public function offsetExists($key){
-        // Init flag
-        $exists=false;
-        // Properties
-        if(is_string($key) && $this->__properties){
-            $exists=$exists || property_exists($this,$key) || property_exists($this,'_'.$key);
-        }
-        // Container
-        if($this->__container){
-            $exists=$exists || array_key_exists($this->__formatKey($key),$this->__values);
-        }
-        return $exists;
-    }
+		Return
+			boolean
+	*/
+	public function offsetExists($key){
+		$key=$this->__chernozem_format_key($key);
+		return property_exists($this,$key) ||
+			   property_exists($this,'_'.$key) ||
+			   array_key_exists($key,$this->__chernozem_values);
+	}
 
-    /*
-        Set a value
+	/*
+		Set a value
 
-        Parameters
-            mixed $key
-            mixed $value
+		Parameters
+			mixed $key
+			mixed $value
+	*/
+	public function offsetSet($key,$value){
+		// Format key
+		$key=$this->__chernozem_format_key($key);
+		// Property exists
+		if(property_exists($this,$key)){
+			$this->$key=$value;
+		}
+		// Property locked
+		elseif(property_exists($this,'_'.$key)){
+			throw new Exception("'$key' value is locked");
+		}
+		// Add to container
+		else{
+			if($key){
+				$this->__chernozem_values[$key]=$value;
+			}
+			else{
+				$this->__chernozem_values[]=$value;
+			}
+		}
+	}
 
-        Throw
-            Exception: if the object is locked
-            Exception: if unable to set the value
-    */
-    public function offsetSet($key,$value){
-        if($this->__locked){
-            throw new Exception("Object is locked, can't set '$key' value");
-        }
-        // Properties
-        if($this->__properties && is_string($key)){
-            // Property exists
-            if(property_exists($this,$key)){
-                $this->$key=$value;
-                return;
-            }
-            // Property locked
-            elseif(property_exists($this,'_'.$key)){
-                throw new Exception("'$key' value is locked");
-            }
-        }
-        // Container
-        if($this->__container){
-            if($key){
-                $this->__values[$this->__formatKey($key)]=$value;
-            }
-            else{
-                $this->__values[]=$value;
-            }
-            return;
-        }
-        // Boom!
-        if(is_string($key)){
-            throw new Exception("Unable to set '$key' value");
-        }
-        else{
-            throw new Exception("Unable to set a value");
-        }
-    }
+	/*
+		Return a value
 
-    /*
-        Return a value
+		Parameters
+			string, integer, object $key
 
-        Parameters
-            string, int, object $key
+		Return
+			mixed
+	*/
+	public function offsetGet($key){
+		// Format key
+		$key=$this->__chernozem_format_key($key);
+		// Property exists
+		if(property_exists($this,$key)){
+			return $this->__chernozem_service($key,$this->$key);
+		}
+		// Locked property
+		elseif(property_exists($this,'_'.$key)){
+			$_key='_'.$key;
+			return $this->$_key;
+		}
+		// Container
+		else{
+			return $this->__chernozem_service($key,$this->__chernozem_values[$key]);
+		}
+	}
 
-        Return
-            mixed
+	/*
+		Unset a value
 
-        Throw
-            Exception: if unable to get a value
-    */
-    public function offsetGet($key){
-        // Properties
-        if(is_string($key) && $this->__properties){
-            // Property exists
-            if(property_exists($this,$key)){
-                $value=$this->$key;
-            }
-            // Property locked
-            elseif(property_exists($this,'_'.$key)){
-                $key='_'.$key;
-                $value=$this->$key;
-            }
-        }
-        // Container
-        if($this->__container && array_key_exists($key=$this->__formatKey($key),$this->__values)){
-            $value=$this->__values[$key];
-        }
-        // Service
-        if($value instanceof Closure && $this->__services[$key]){
-            if(is_null($val=&$this->__persistent_values[$key])){
-                $val=$value();
-            }
-            $value=$val;
-        }
-        // Boom!
-        if($value===null && !$this->__nullable){
-            if(is_string($key)){
-                throw new Exception("Unable to return '$key' value");
-            }
-            else{
-                throw new Exception("Unable to return a value");
-            }
-        }
-        return $value;
-    }
+		Parameters
+			string, integer, object $key
+	*/
+	public function offsetUnset($key){
+		unset($this->__chernozem_values[$this->__chernozem_format_key($key)]);
+	}
 
-    /*
-        Unset a value
+	/*
+		Return the current value of the container
 
-        Parameters
-            string, int, object $key
-    */
-    public function offsetUnset($key){
-        unset($this->__values[$this->__formatKey($key)]);
-    }
+		Return
+			mixed
+	*/
+	public function current(){
+		return current($this->__chernozem_values);
+	}
 
-    /*
-        Return the current value of the container
+	/*
+		Return the current key of the container
 
-        Return
-            mixed
-    */
-    public function current(){
-        return current($this->__values);
-    }
+		Return
+			string
+	*/
+	public function key(){
+		return key($this->__chernozem_values);
+	}
 
-    /*
-        Return the current key of the container
+	/*
+		Advance the internal pointer of the container
+	*/
+	public function next(){
+		next($this->__chernozem_values);
+	}
 
-        Return
-            string
-    */
-    public function key(){
-        return key($this->__values);
-    }
+	/*
+		Reset the internal pointer of the container
+	*/
+	public function rewind(){
+		reset($this->__chernozem_values);
+	}
 
-    /*
-        Advance the internal pointer of the container
-    */
-    public function next(){
-        next($this->__values);
-    }
+	/*
+		Verify if the current value is valid
 
-    /*
-        Reset the internal pointer of the container
+		Return
+			boolean
+	*/
+	public function valid(){
+		return key($this->__chernozem_values)!==null;
+	}
 
-        Throw
-            Exception: if not traversable
-    */
-    public function rewind(){
-        if(!$this->__traversable){
-            throw new Exception("Container is not traversable");
-        }
-        reset($this->__values);
-    }
+	/*
+		Return the number of values in the container
 
-    /*
-        Verify if the current value is valid
+		Return
+			integer
+	*/
+	public function count(){
+		return count($this->__chernozem_values);
+	}
 
-        Return
-            boolean
-    */
-    public function valid(){
-        return key($this->__values)!==null;
-    }
+	/*
+		Launch closure if it's set as a service
 
-    /*
-        Return the number of values in the container
+		Parameters
+			integer, string $key
+			mixed $value
 
-        Return
-            int
-    */
-    public function count(){
-        return count($this->__values);
-    }
+		Return
+			mixed $value
+	*/
+	final private function __chernozem_service($key,$value){
+		if($this->__chernozem_services[$key]){
+			if(is_null($service_value=&$this->__chernozem_service_values[$key])){
+				$service_value=$value();
+			}
+			$value=$service_value;
+		}
+		return $value;
+	}
 
-    /*
-        Format a key
+	/*
+		Format a key
 
-        Parameters
-            mixed $key
+		Parameters
+			mixed $key
 
-        Return
-            mixed
-    */
-    protected function __formatKey($key){
-        if(is_object($key)){
-            return spl_object_hash($key);
-        }
-        return $key;
-    }
+		Return
+			mixed
+	*/
+	final private function __chernozem_format_key($key){
+		if(is_object($key)){
+			return spl_object_hash($key);
+		}
+		else{
+			return $key;
+		}
+	}
 
 }
