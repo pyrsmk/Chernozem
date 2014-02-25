@@ -1,0 +1,66 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+    ],
+    "hash": "271d8f9f8c4d16aa90191870dfc349f6",
+    "packages": [
+        {
+            "name": "pyrsmk/minisuite",
+            "version": "1.0.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/pyrsmk/MiniSuite.git",
+                "reference": "edcfda003e13585877f8b835f4d458982cbca971"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/pyrsmk/MiniSuite/zipball/edcfda003e13585877f8b835f4d458982cbca971",
+                "reference": "edcfda003e13585877f8b835f4d458982cbca971",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "MiniSuite": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Aurélien Delogu",
+                    "email": "dev@dreamysource.fr",
+                    "homepage": "http://dreamysource.fr"
+                }
+            ],
+            "description": "A mini unit testing tool",
+            "keywords": [
+                "testing",
+                "unit"
+            ],
+            "time": "2014-02-24 20:25:31"
+        }
+    ],
+    "packages-dev": [
+
+    ],
+    "aliases": [
+
+    ],
+    "minimum-stability": "stable",
+    "stability-flags": [
+
+    ],
+    "platform": [
+
+    ],
+    "platform-dev": [
+
+    ]
+}

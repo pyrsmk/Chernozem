@@ -1,0 +1,5 @@
+{
+	"require": {
+		"pyrsmk/minisuite": "1.0.*"
+	}
+}

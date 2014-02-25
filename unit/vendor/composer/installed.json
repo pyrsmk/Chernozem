@@ -1,0 +1,45 @@
+[
+    {
+        "name": "pyrsmk/minisuite",
+        "version": "1.0.8",
+        "version_normalized": "1.0.8.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/pyrsmk/MiniSuite.git",
+            "reference": "edcfda003e13585877f8b835f4d458982cbca971"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/pyrsmk/MiniSuite/zipball/edcfda003e13585877f8b835f4d458982cbca971",
+            "reference": "edcfda003e13585877f8b835f4d458982cbca971",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "time": "2014-02-24 20:25:31",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "MiniSuite": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Aurélien Delogu",
+                "email": "dev@dreamysource.fr",
+                "homepage": "http://dreamysource.fr"
+            }
+        ],
+        "description": "A mini unit testing tool",
+        "keywords": [
+            "testing",
+            "unit"
+        ]
+    }
+]
