@@ -25,7 +25,7 @@ Pick up the `src/Chernozem.php` file or install it with [Composer](https://getco
 ```json
 {
     "require": {
-        "pyrsmk/chernozem": "3.*"
+        "pyrsmk/chernozem": "3.0.*"
     }
 }
 ```
