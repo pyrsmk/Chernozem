@@ -160,7 +160,9 @@ But here's the most interesting part!
     echo $container['bar'];
     // This will throw an exception
     $container['bar']=230;
-    // This too, since $__foobar is not accessible at all
+    // This line will print nothing,
+    // since $__foobar is not accessible at all
+    // the returned value will be from the container instead from a propery
     echo $container['foobar'];
 ```
 
