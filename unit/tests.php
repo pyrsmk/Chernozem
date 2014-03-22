@@ -193,27 +193,3 @@ $minisuite->test('[Services] Unset a service',function(){
 ########################################################### Run tests
 
 $minisuite->run();
-
-/*
-        // Unset
-        unset($this->c['test']);
-        $this->check('Unset',!isset($this->c['test']));
-        return 15;
-    }
-
-    protected function testVarious(){
-        $this->c=new C;
-        // Not traversable
-        try{
-            foreach($this->c as $key=>$value){}
-            $this->check("Not traversable",false);
-        }
-        catch(\Exception $e){
-            $this->check("Not traversable",true);
-        }
-        // Countable
-        $this->check('0 item in the container',count($this->c)==0);
-        // To array
-        $this->check('toArray() returns an array',is_array($this->c->toArray()));
-        return 3;
-    }*/
