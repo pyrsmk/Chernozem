@@ -228,4 +228,4 @@ For performance purpose, from a Chernozem child, please use `$this->__chernozem_
 License
 -------
 
-Chernozem is published under the MIT license. Feel free to fork it ;)
+Chernozem is published under the [MIT license](http://dreamysource.mit-license.org).
