@@ -219,7 +219,7 @@ class Chernozem implements ArrayAccess, Iterator, Countable{
 			mixed $value
 	*/
 	final private function __chernozem_service($key,$value){
-		if($this->__chernozem_services[$key]){
+		if(isset($this->__chernozem_services[$key])){
 			if(is_null($service_value=&$this->__chernozem_service_values[$key])){
 				$service_value=$value();
 			}
