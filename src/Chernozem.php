@@ -139,9 +139,10 @@ class Chernozem implements ArrayAccess, Iterator, Countable{
 			return $this->$_key;
 		}
 		// Container
-		else{
+		else if($this->__chernozem_values[$key]){
 			return $this->__chernozem_service($key,$this->__chernozem_values[$key]);
 		}
+		return null;
 	}
 
 	/*
@@ -151,7 +152,10 @@ class Chernozem implements ArrayAccess, Iterator, Countable{
 			string, integer, object $key
 	*/
 	public function offsetUnset($key){
-		unset($this->__chernozem_values[$this->__chernozem_format_key($key)]);
+		$key=$this->__chernozem_format_key($key);
+		if(isset($this->__chernozem_values[$key])){
+			unset($this->__chernozem_values[$key]);
+		}
 	}
 
 	/*

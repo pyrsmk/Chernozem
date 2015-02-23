@@ -1,4 +1,4 @@
-Chernozem 3.0.1
+Chernozem 3.0.2
 ===============
 
 Chernozem is an advanced dependency injection container based on the `ArrayAccess` PHP core object, like [Pimple](http://pimple.sensiolabs.org/), but with different features.
@@ -15,7 +15,7 @@ Pick up the `src/Chernozem.php` file or install it with [Composer](https://getco
 ```json
 {
     "require": {
-        "pyrsmk/chernozem": "3.0.*"
+        "pyrsmk/chernozem": "~3.0"
     }
 }
 ```
