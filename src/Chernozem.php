@@ -139,10 +139,12 @@ class Chernozem implements ArrayAccess, Iterator, Countable{
 			return $this->$_key;
 		}
 		// Container
-		else if($this->__chernozem_values[$key]){
+		else if(isset($this->__chernozem_values[$key])){
 			return $this->__chernozem_service($key,$this->__chernozem_values[$key]);
 		}
-		return null;
+		else{
+			return null;
+		}
 	}
 
 	/*
