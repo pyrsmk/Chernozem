@@ -15,5 +15,15 @@
 		"psr-0" : {
 			"" : "src/"
 		}
+	},
+	"archive": {
+		"exclude": [
+			".git/",
+			".gitignore",
+			"src/",
+			"tests/",
+			"vendor/",
+			"composer.*"
+		]
 	}
 }
