@@ -10,18 +10,10 @@ With dependency injection containers, you can inject values with an array writin
 Installing
 ----------
 
-Pick up the `src/Chernozem.php` file or install it with [Composer](https://getcomposer.org/) :
+Pick up the source or install it with [Composer](https://getcomposer.org/) :
 
 ```json
-{
-    "require": {
-        "pyrsmk/chernozem": "~3.0"
-    }
-}
-```
-
-```shell
-composer install
+composer require pyrsmk/chernozem
 ```
 
 Basics
