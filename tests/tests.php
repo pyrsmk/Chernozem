@@ -167,6 +167,13 @@ $chernozem['service']=function(){
 	return true;
 };
 $chernozem->service('service');
+$chernozem->unservice('service');
+
+$minisuite->expects('[Services] Quickly set/unset a service')
+		  ->that($chernozem['service'])
+		  ->isInstanceOf('Closure');
+
+$chernozem->service('service');
 
 $minisuite->expects('[Services] Set a service')
 		  ->that($chernozem['service'])

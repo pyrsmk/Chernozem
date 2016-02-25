@@ -52,7 +52,7 @@ class Chernozem implements ArrayAccess, Iterator, Countable {
 	*/
 	final public function service($key) {
 		if(!($this->offsetGet($key) instanceof Closure)) {
-			throw new Exception("'$key' value must a closure to be able to set it as a service");
+			throw new Exception("'$key' value must be a closure to be able to set it as a service");
 		}
 		$this->__chernozem_services[$this->__chernozemFormatKey($key)] = 1;
 		return $this;
@@ -69,9 +69,9 @@ class Chernozem implements ArrayAccess, Iterator, Countable {
 	*/
 	final public function unservice($key) {
 		$key = $this->__chernozemFormatKey($key);
-		if(array_key_exists($key, $this->__chernozem_service_values)) {
-			unset($this->__chernozem_service_values[$key]);
+		if(array_key_exists($key, $this->__chernozem_services)) {
 			unset($this->__chernozem_services[$key]);
+			unset($this->__chernozem_service_values[$key]);
 		}
 		return $this;
 	}
