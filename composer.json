@@ -1,7 +1,7 @@
 {
 	"name": "pyrsmk/chernozem",
-	"description": "An advanced dependency injection container",
-	"keywords": ["dependency","injection","container"],
+	"description": "Dependency injection container for the masses",
+	"keywords": ["dependency", "injection", "container"],
 	"license": "MIT",
 	"authors": [{
 		"name": "Aurélien Delogu",
@@ -9,11 +9,12 @@
 		"homepage": "http://dreamysource.io/project/chernozem"
 	}],
 	"require": {
-		"php": ">=5.3.0"
+		"php": ">=5.4",
+		"container-interop/container-interop": "^1.1"
 	},
 	"autoload": {
-		"psr-0" : {
-			"" : "src/"
+		"psr-4" : {
+			"Chernozem\\" : "src/"
 		}
 	}
 }

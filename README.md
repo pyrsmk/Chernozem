@@ -1,16 +1,30 @@
-Chernozem 3.0.9
+Chernozem 4.0.0
 ===============
 
-Chernozem is an advanced dependency injection container based on the `ArrayAccess` PHP core object, like [Pimple](http://pimple.sensiolabs.org/), but with different features.
+Chernozem is an advanced dependency injection container based on `ArrayAccess`. It has been primarily designed to be extended by another class, so it takes care of any option for you. But it can also be used as a simple container.
 
-Dependency injection is a design pattern to make better encapsulation of external objects into another object. Fabien Potencier has written an article about that, I advise you to read it: http://fabien.potencier.org/article/11/what-is-dependency-injection.
+Concretely, Chernozem can register any value you want and create services. Services are simple closures, used to initialize objects and return their instance. It's really useful for, per example, loading a logger when we need it, with all required options and dependencies it could need.
 
-With dependency injection containers, you can inject values with an array writing and so configure your object. It is very helpful because extending those containers will drop much of your setters/getters and provide a robust implementation. Many tools use those containers like the [Lumy](https://github.com/pyrsmk/Lumy) or [Silex](http://silex.sensiolabs.org/) framework.
+If you want to learn more about dependency injection, Fabien Potencier has written an article about that : http://fabien.potencier.org/article/11/what-is-dependency-injection.
+
+Features
+--------
+
+- interoperability with [container-interop](https://github.com/container-interop/container-interop)
+- factory closures
+- inflectors
+- delegate containers
+- service providers
+- type hinting
+- and more...
+
+Note about the v4
+-----------------
+
+Chernozem has been completely rewritten and the API has changed. Please read the whole documentation before upgrading from v3.
 
 Installing
 ----------
-
-Pick up the source or install it with [Composer](https://getcomposer.org/) :
 
 ```
 composer require pyrsmk/chernozem
@@ -19,168 +33,257 @@ composer require pyrsmk/chernozem
 Basics
 ------
 
-You can pass an array or a `Traversable` object to the constructor to add values directly to your container or set some of your internal properties (we'll see all this later) :
+Let's see quickly how it works :
 
 ```php
-$container=new SampleClass(array(
-    'foo'       => false,
-    'bar'       => 0.758,
-    'foobar'    => function(){
-        return 'something';
-    }
-));
-// Print 0.758
-echo $container['bar'];
-```
+$chernozem = new Chernozem\Container();
 
-If you want, you can instantiate Chernozem itself and use it directly :
+// Set a value
+$chernozem['foo'] = 72;
 
-```php
-$container=new Chernozem(array('some','values'));
-$container['foo']='bar';
-foreach($container as $key=>$value){
-    echo "$key : $value\n";
-}
-/*
-    This will echo :
-
-    0 : some
-    1 : values
-    foo : bar
-*/
-```
-
-The container
--------------
-
-As we said, Chernozem works as a value container. Let's see how :
-
-```php
-// Instantiate a Chernozem child
-$container=new SampleClass;
-// Add a value
-$container['foo']='bar';
 // Get a value
-echo $container['foo'];
-// Verify existence
-if(isset($container['foo'])){
-    echo 'foo exists';
+echo $chernozem['foo'];
+
+// Test a value
+if(isset($chernozem['foo'])) {
+	// 'foo' value exists
 }
-// Drop
-unset($container['foo']);
-if(!isset($container['foo'])){
-    echo 'foo does not exists';
+
+// Remove a value
+unset($chernozem['foo']);
+```
+
+Alternatively, and for interoperability, you can access to Chernozem with this API :
+
+```php
+// Set a value
+$chernozem->set('foo', 72);
+
+// Get a value
+echo $chernozem->get('foo');
+
+// Test a value
+if($chernozem->has('foo')) {
+	// 'foo' value exists
 }
+
+// Remove a value
+$chernozem->remove('foo');
 ```
 
-As you can see, it supports all basic array operations, numeric keys and even the `[]` syntax :
+You can instantiate Chernozem with some values too :
 
 ```php
-$container[]=72;
+$chernozem = new Chernozem\Container(array(
+	'foo' => 72,
+	'bar' => 33
+));
 ```
 
-Moreover, you can use objects as keys:
+You can add values to the container without specifying keys (like with a normal array) :
 
 ```php
-$object=new stdClass();
-$container[$object]=72;
-// Print 72
-echo $container[$object];
+$chernozem[] = 'foo';
 ```
 
-Chernozem implements two interfaces : `Countable` and `Iterator`. That means you can use the `count()` PHP function to know how many values are into the container and the `foreach()` structure control to iterate over your Chernozem object.
+Chernozem also supports objects as keys :
 
 ```php
-// Print the number of elements in the container
-echo count($container);
-// Iterate
-foreach($container as $key=>$value){
-    echo $value;
-}
-```
-
-And if you want to retrieve all values from the container,you can use the `toArray()` method:
-
-```php
-// Will print all registered values
-var_dump($container->toArray());
-```
-
-Internal object properties
---------------------------
-
-By extending Chernozem, you can modify properties from your objects with the following rules :
-
-- `$var` properties are editable
-- `$_var` aren't but are still accessible
-- `$__var` properties are not editable neither accessible
-- only strings are allowed as keys
-- you cannot use `unset`
-- properties are not count by the `count()` function
-- `foreach()` does not iterate other properties but only over container values
-- `toArray()` does not return any property
-- properties have priority over container values
-
-But here's the most interesting part!
-
-```php
-class SampleClass{
-
-    protected $foo='blahblah';
-    protected $_bar=72;
-    protected $__foobar;
-
-}
-```
-
-```php
-// Print 'blahblah'
-echo $container['foo'];
-// Print 'lollipop'
-$container['foo']='lollipop';
-echo $container['foo'];
+$myclass = new Stdclass();
+$chernozem[$myclass] = 72;
 // Print '72'
-echo $container['bar'];
-// This will throw an exception
-$container['bar']=230;
-// This line will print nothing,
-// since $__foobar is not accessible at all
-// the returned value will be from the container instead from a propery
-echo $container['foobar'];
+echo $chernozem[$myclass];
 ```
 
-Services
---------
-
-Closure values can be set as services. That means the closure will be automatically executed when the user will retrieve it. It's really useful to initialize objects on-demand to save resources.
-When initialized, the object will be saved as the real value of the specified key.  Here's a quick example with [Twig](http://twig.sensiolabs.org) :
+If you need to clear all your container values, do :
 
 ```php
-// Set initialization closure for Twig
-$container['twig']=function(){
-    require_once '/path/to/lib/Twig/Autoloader.php';
-    Twig_Autoloader::register();
-    $twig=new Twig_Environment(
-        new Twig_Loader_Filesystem('/path/to/templates'),
-        array('cache'=>'/path/to/compilation_cache')
-    );
-    return $twig;
-};
-// Define that closure as a service
-$container->service('twig');
+$chernozem->clear();
 ```
 
-Now, when you'll access to the `twig` value you won't have the closure itself, but the initialized Twig object :
+Factory closures
+----------------
+
+With factory closures you can create services. The `factory()` method creates a service that will always return a new instance of the service :
 
 ```php
-// Render a template
-$container['twig']->render('index.tpl');
+$chernozem['some_service'] = $chernozem->factory(function($chernozem) {
+	return new Some_Service();
+});
 ```
 
-If you want to remove the `twig` closure as a service, just do :
+The `service()` method creates a service that will return the same instance of itself :
 
 ```php
-$container->unservice('twig');
+$chernozem['some_service'] = $chernozem->service(function($chernozem) {
+	return new Some_Service();
+});
+```
+
+Service providers
+-----------------
+
+Service providers are a way to organize and reuse your services with classes. Let's see how we write a service provider :
+
+```php
+class MyService implements Chernozem\ServiceProviderInterface {
+
+	public function register(Interop\Container\ContainerInterface $container) {
+		$container['some_service1'] = new Some_Service();
+		$container['some_service2'] = new Another_Service();
+		$container['an_option'] = 'my@email.com';
+	}
+
+}
+```
+
+Service providers are run directly when they are registered, with :
+
+```php
+$chernozem->register(new MyService());
+```
+
+Type hinting
+------------
+
+Type hinting is a cool feature of Chernozem that let you define the type of a value in the container. It avoids issues in your application because it could happen that a wrong type is set.
+
+```php
+// Set a list of fruits
+$chernozem['fruits'] = array('apple', 'banana', 'pear');
+// Set type hinting
+$chernozem->hint('fruits', 'array');
+// Oops! Wrong type!
+$chernozem['fruits'] = 72;
+```
+
+The following basic types are supported :
+
+- boolean/bool
+- integer/int
+- float/double
+- string
+- array
+
+Please not that class names are also supported!
+
+Read only values
+----------------
+
+You can mark your values as read only if needed with :
+
+```php
+// Set a 'mailer' service
+$chernozem['mailer'] = $chernozem->service(function($chernozem) {
+	return new Mailer();
+});
+// Mark as read onyl
+$chernozem->readonly('mailer');
+```
+
+Inflectors
+----------
+
+All previous features are available thanks to inflectors. Inflectors are a way to alter a value when it's set or got. Note that setter inflectors are usually used for data validation, and getter inflectors for data filtering. For the next example, let's say we have previously set some random service that we don't want to be overwritten further in our application, and we want to run some actions each time the service is retrieved :
+
+```php
+$chernozem->setter('foo_service', function($service) {
+	throw new Exception("'foo_service' is already set!");
+	return $service; // Never run, it's only for the example
+});
+
+$chernozem->getter('foo_service', function($service) {
+	$service->executeSomeAction();
+	$service->executeAnotherAction();
+	return $service;
+});
+```
+
+Now, setting 'foo_service' will throw an exception and each time 'foo_service' is retrieved, two actions will be run on our service. It's that simple!
+
+Delegate and composite container
+--------------------------------
+
+A delegate container is a container that will be used to load dependencies for services. You may see that `factory()` and `service()` pass Chernozem as parameter. It's used for the service to load some dependencies on the container. But in big applications, you could deal with many different containers and your dependencies could be on another container than Chernozem.
+
+```php
+$delegate_container = new SomeVendor\Container();
+
+// ... some stuff ...
+
+$chernozem->delegate($delegate_container);
+
+$chernozem['some_service'] = $chernozem->service(function($delegate_container) {
+	$some_service = new Some_Service();
+	// Load an option that is registered in the delegate container
+	$some_service->setOption('some_option', $delegate_container->get('some_option'));
+	return $some_service;
+});
+```
+
+If you have a lot of containers to manage,, Chernozem has a `Composite` class to take care of that :
+
+```php
+// Instantiate containers
+$container1 = new SomeVendor\Container();
+$container2 = new AnotherVendor\Container();
+
+// ... some stuff ...
+
+// Add containers to the composite container
+$composite = new Chernozem\Composite();
+$composite->add($container1);
+$composite->add($container2);
+```
+
+Now that all your containers are registered, you can get a value as always :
+
+```php
+echo $composite['foo'];
+```
+
+Calling `foo` on the composite class will get the first `foo` value found in the registered containers. You can verify if a key exist too :
+
+```php
+if(isset($composite['foo'])){
+	// the 'foo' key exists
+}
+```
+
+Note that the `Composite` class is based on [container-interop](https://github.com/container-interop/container-interop), and it also supports a `delegate()` method so you can chain things, if needed.
+
+Loops
+-----
+
+Chernozem container also implements `Iterator` and `Countable`. That means that you can iterate over the container and count how many elements are in it.
+
+```php
+echo count($chernozem);
+```
+
+```php
+foreach($chernozem as $id => $value) {
+	var_dump($value);
+}
+```
+
+Alternative ways to get data
+-----------------------------
+
+You can retrieve all container values with :
+
+```php
+$values = $chernozem->toArray();
+```
+
+If you need to get the base closure of a service (not its instance) call `raw()` :
+
+```php
+$chernozem['some_service'] = $chernozem->service(function($c) {
+	// do stuff
+});
+
+$closure = $chernozem->raw('some_service');
 ```
 
 Chaining arrays
@@ -189,29 +292,41 @@ Chaining arrays
 You can't chain arrays to modify or retrieve a value with Chernozem, this is due to a PHP limitation with `ArrayAccess`. The basic way to handle this case is :
 
 ```php
-// Retrieve 'foo' array
-$foo=$container['foo'];
-// Add 'bar' to the array
-$foo['bar']=42;
+// Get 'foo' array
+$foo = $chernozem['foo'];
+// Add 'bar' value to the array
+$foo['bar'] = 42;
 // Update 'foo' value
-$container['foo']=$foo;
+$chernozem['foo'] = $foo;
 ```
 
-But to simplify this, you can declare a Chernozem object instead of an array as your container value, then you'll be able to chain :
+But to simplify this, you can declare a `Chernozem\Container` object instead of an array as your container value, then you'll be able to chain things :
 
 ```php
-$container['foo']=new Chernozem(array('bar'=>72));
+$chernozem['foo'] = new Chernozem\Container(array('bar' => 72));
 // Print '72'
-echo $container['foo']['bar'];
-$container['foo']['bar']=42;
+echo $chernozem['foo']['bar'];
+$chernozem['foo']['bar'] = 42;
 // Print '42'
-echo $container['foo']['bar'];
+echo $chernozem['foo']['bar'];
 ```
 
-Last remarks
-------------
+Last notes
+----------
 
-For performance purpose, if you want to access to container values from a Chernozem child, please use `$this->__chernozem_values['foo']` rather than `$this['foo']`.
+If you want to overwrite a factory closure (created with `factory()` or `service()`), you must unset the value before setting it :
+
+```php
+$chernozem['service'] = $chernozem->service(function() {
+	// First service
+});
+
+unset($chernozem['service']);
+
+$chernozem['service'] = $chernozem->service(function() {
+	// New service
+});
+```
 
 License
 -------

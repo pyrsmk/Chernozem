@@ -1,186 +1,437 @@
 <?php
 
+use Symfony\Component\ClassLoader\Psr4ClassLoader;
+
 ########################################################### Prepare
 
 error_reporting(E_ALL);
 
-require __DIR__.'/../src/Chernozem.php';
 require __DIR__.'/vendor/autoload.php';
+require __DIR__.'/../vendor/autoload.php';
 
-$minisuite=new MiniSuite('Chernozem');
+$loader = new Psr4ClassLoader;
+$loader->addPrefix('Chernozem\\', '../src');
+$loader->register();
 
-########################################################### Declare test class
+########################################################### Basics
 
-class TestClass extends Chernozem{
-    protected $a=72;
-    protected $_b=array('72');
-    protected $__c=true;
+$suite = new MiniSuite\Suite('Basics');
+
+$chernozem = new Chernozem\Container();
+$chernozem->set('foo', 'bar');
+
+$suite->expects('set()/get()')
+	  ->that($chernozem->get('foo'))
+	  ->equals('bar');
+
+$chernozem[] = 72;
+
+$suite->expects('set() : with no key')
+	  ->that($chernozem->get(0))
+	  ->equals(72);
+
+$key = new Stdclass();
+$chernozem->set($key, 'bahamut');
+
+$suite->expects('set()/get() : object as key')
+	  ->that($chernozem->get($key))
+	  ->equals('bahamut');
+
+$suite->expects('get() : not found')
+	  ->that(function() use($chernozem) {
+		  $chernozem->get('bar');
+	  })
+	  ->throws('Chernozem\NotFoundException');
+
+$suite->expects('has() : exists')
+	  ->that($chernozem->has('foo'))
+	  ->equals(true);
+
+$suite->expects('has() : does not exist')
+	  ->that($chernozem->has('bar'))
+	  ->equals(false);
+
+$chernozem->remove(0);
+
+$suite->expects('remove()')
+	  ->that($chernozem->has(0))
+	  ->equals(false);
+
+$suite->expects('remove() : not found')
+	  ->that(function() use($chernozem) {
+		  $chernozem->remove(0);
+	  })
+	  ->throws('Chernozem\NotFoundException');
+
+$chernozem['final'] = 'fantasy';
+
+$suite->expects('set/get : ArrayAccess')
+	  ->that($chernozem['final'])
+	  ->equals('fantasy');
+
+$suite->expects('has : ArrayAccess')
+	  ->that(isset($chernozem['final']))
+	  ->equals(true);
+
+unset($chernozem['final']);
+
+$suite->expects('remove : ArrayAccess')
+	  ->that(isset($chernozem['final']))
+	  ->equals(false);
+
+$fruits = array(
+	'banana' => 'yellow',
+	'strawberry' => 'red',
+	'lemon' => 'green'
+);
+$chernozem = new Chernozem\Container($fruits);
+
+$suite->expects('constructor/toArray()')
+	  ->that($chernozem->toArray())
+	  ->equals($fruits);
+
+$chernozem->clear();
+
+$suite->expects('clear()')
+	  ->that($chernozem->toArray())
+	  ->equals(array());
+
+########################################################### Loops
+
+$suite = new MiniSuite\Suite('Loops');
+
+$chernozem = new Chernozem\Container($fruits);
+$values = array();
+foreach($chernozem as $key => $value) {
+	$values[$key] = $value;
 }
 
-########################################################### Base tests
+$suite->expects('foreach()')
+	  ->that($chernozem->toArray())
+	  ->equals($fruits);
 
-$chernozem=new Chernozem(array('test'=>'test'));
+$suite->expects('count()')
+	  ->that(count($chernozem))
+	  ->equals(3);
 
-$minisuite->expects('[Base] Instantiate with an array')
-		  ->that($chernozem['test'])
-		  ->equals('test');
-	
-$chernozem=new Chernozem(array('test'=>'test'));
-$chernozem=new Chernozem($chernozem);
+########################################################### Inflectors
 
-$minisuite->expects('[Base] Instantiate with a traversable object')
-		  ->that($chernozem['test'])
-		  ->equals('test');
+$suite = new MiniSuite\Suite('Inflectors');
 
-########################################################### Container tests
+$value = new Chernozem\Value('hello');
+$value->addInputInflector(function($value) {
+	if(strlen($value) > 8) {
+		throw new Exception();
+	}
+	return $value;
+});
+$value->addOutputInflector(function($value) {
+	return strtoupper($value);
+});
 
-$chernozem=new TestClass;
-$chernozem[]=33;
+$suite->expects('getValue()/addOutputInflector()')
+	  ->that($value->getValue())
+	  ->equals('HELLO');
 
-$minisuite->expects('[Container] Add a value')
-		  ->that($chernozem[0])
-		  ->equals(33);
+$suite->expects('getRawValue()')
+	  ->that($value->getRawValue())
+	  ->equals('hello');
 
-$chernozem=new TestClass;
-$chernozem[33]=33;
+$suite->expects('setValue()/addInputInflector() : invalid')
+	  ->that(function() use($value) {
+		  $value->setValue('wonderful');
+	  })
+	  ->throws();
 
-$minisuite->expects('[Container] Set/get with an integer key')
-		  ->that($chernozem[33])
-		  ->equals(33);
+$value->setValue('bip');
 
-$chernozem=new TestClass;
-$chernozem['test']=33;
+$suite->expects('setValue()/addInputInflector() : valid')
+	  ->that($value->getValue())
+	  ->equals('BIP');
 
-$minisuite->expects('[Container] Set/get with a string key')
-		  ->that($chernozem['test'])
-		  ->equals(33);
+$chernozem->setter('banana', function($value) {
+	if(strlen($value) > 8) {
+		throw new Exception();
+	}
+	return $value;
+});
+$chernozem->getter('banana', function($value) {
+	return strtoupper($value);
+});
 
-$chernozem=new TestClass;
-$chernozem[$chernozem]=33;
+$suite->expects('setter()')
+	  ->that(function() use($chernozem) {
+		  $chernozem['banana'] = 'wonderful';
+	  })
+	  ->throws();
 
-$minisuite->expects('[Container] Set/get with an object key')
-		  ->that($chernozem[$chernozem])
-		  ->equals(33);
+$suite->expects('getter()')
+	  ->that($chernozem['banana'])
+	  ->equals('YELLOW');
 
-$chernozem=new TestClass(array('test'=>true));
+########################################################### Factory closures
 
-$minisuite->expects('[Container] Required value is set')
-		  ->that(isset($chernozem['test']))
-		  ->isTheSameAs(true);
+$suite = new MiniSuite\Suite('Factory closures');
 
-$minisuite->expects('[Container] Required value is true')
-		  ->that($chernozem['test'])
-		  ->isTheSameAs(true);
+class Factory { protected $a = 0; public function get() { return ++$this->a; } }
 
-$chernozem=new TestClass(array('test'=>true));
-unset($chernozem['test']);
+$chernozem = new Chernozem\Container();
+$chernozem['factory'] = $chernozem->factory(function($chernozem) use($suite) {
+	$suite->expects('factory() : passed container')
+		  ->that($chernozem)
+		  ->isInstanceOf('Chernozem\Container');
+	return new Factory();
+});
 
-$minisuite->expects('[Container] Unset a value')
-		  ->that(isset($chernozem['test']))
-		  ->isTheSameAs(false);
+$suite->expects('factory() : first get')
+	  ->that($chernozem['factory']->get())
+	  ->equals(1);
 
-$values=array('chaud','cacao','chocho'=>'chocolat');
-$chernozem=new TestClass($values);
+$suite->expects('factory() : second get')
+	  ->that($chernozem['factory']->get())
+	  ->equals(1);
 
-$minisuite->expects('[Container] Count values')
-		  ->that(count($chernozem))
-		  ->equals(3);
+unset($chernozem['factory']);
+$chernozem['factory'] = $chernozem->service(function($chernozem) use($suite) {
+	$suite->expects('service() : passed container')
+		  ->that($chernozem)
+		  ->isInstanceOf('Chernozem\Container');
+	return new Factory();
+});
 
-$minisuite->expects('[Container] Get all values')
-		  ->that($chernozem->toArray())
-		  ->isTheSameAs($values);
+$suite->expects('service() : first get')
+	  ->that($chernozem['factory']->get())
+	  ->equals(1);
 
-$vals=array();
-foreach($chernozem as $key=>$val){
-	$vals[$key]=$val;
+$suite->expects('service() : second get')
+	  ->that($chernozem['factory']->get())
+	  ->equals(2);
+
+########################################################### Type hinting
+
+$suite = new MiniSuite\Suite('Type hinting');
+
+$chernozem = new Chernozem\Container(array(
+	'int' => null,
+	'integer' => null,
+	'float' => null,
+	'double' => null,
+	'bool' => null,
+	'boolean' => null,
+	'string' => null,
+	'array' => null,
+	'class' => null,
+	'resource' => null,
+));
+$chernozem->hint('int', 'int');
+$chernozem->hint('integer', 'integer');
+$chernozem->hint('float', 'float');
+$chernozem->hint('double', 'double');
+$chernozem->hint('bool', 'bool');
+$chernozem->hint('boolean', 'boolean');
+$chernozem->hint('string', 'string');
+$chernozem->hint('array', 'array');
+$chernozem->hint('class', 'Factory');
+$chernozem->hint('resource', 'resource');
+
+$suite->expects('int : fail')
+	  ->that(function() use($chernozem) {
+		  $chernozem['int'] = 1.72;
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+$suite->expects('int : pass')
+	  ->that(function() use($chernozem) {
+		  $chernozem['int'] = 72;
+	  })
+	  ->doesNotThrow('Chernozem\ContainerException');
+
+$suite->expects('integer : fail')
+	  ->that(function() use($chernozem) {
+		  $chernozem['integer'] = 1.72;
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+$suite->expects('integer : pass')
+	  ->that(function() use($chernozem) {
+		  $chernozem['integer'] = 72;
+	  })
+	  ->doesNotThrow('Chernozem\ContainerException');
+
+$suite->expects('float : fail')
+	  ->that(function() use($chernozem) {
+		  $chernozem['float'] = 72;
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+$suite->expects('float : pass')
+	  ->that(function() use($chernozem) {
+		  $chernozem['float'] = 1.72;
+	  })
+	  ->doesNotThrow('Chernozem\ContainerException');
+
+$suite->expects('double : fail')
+	  ->that(function() use($chernozem) {
+		  $chernozem['float'] = 72;
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+$suite->expects('double : pass')
+	  ->that(function() use($chernozem) {
+		  $chernozem['float'] = 1.72;
+	  })
+	  ->doesNotThrow('Chernozem\ContainerException');
+
+$suite->expects('bool : fail')
+	  ->that(function() use($chernozem) {
+		  $chernozem['bool'] = 72;
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+$suite->expects('bool : pass')
+	  ->that(function() use($chernozem) {
+		  $chernozem['bool'] = true;
+	  })
+	  ->doesNotThrow('Chernozem\ContainerException');
+
+$suite->expects('boolean : fail')
+	  ->that(function() use($chernozem) {
+		  $chernozem['boolean'] = 72;
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+$suite->expects('boolean : pass')
+	  ->that(function() use($chernozem) {
+		  $chernozem['boolean'] = true;
+	  })
+	  ->doesNotThrow('Chernozem\ContainerException');
+
+$suite->expects('string : fail')
+	  ->that(function() use($chernozem) {
+		  $chernozem['string'] = 72;
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+$suite->expects('string : pass')
+	  ->that(function() use($chernozem) {
+		  $chernozem['string'] = 'string';
+	  })
+	  ->doesNotThrow('Chernozem\ContainerException');
+
+$suite->expects('array : fail')
+	  ->that(function() use($chernozem) {
+		  $chernozem['array'] = 72;
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+$suite->expects('array : pass')
+	  ->that(function() use($chernozem) {
+		  $chernozem['array'] = array();
+	  })
+	  ->doesNotThrow('Chernozem\ContainerException');
+
+$suite->expects('class : fail')
+	  ->that(function() use($chernozem) {
+		  $chernozem['class'] = 72;
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+$suite->expects('class : pass')
+	  ->that(function() use($chernozem) {
+		  $chernozem['class'] = new Factory();
+	  })
+	  ->doesNotThrow('Chernozem\ContainerException');
+
+$suite->expects('unsupported type')
+	  ->that(function() use($chernozem) {
+		  $chernozem['resource'] = 72;
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+########################################################### Read only values
+
+$suite = new MiniSuite\Suite('Read only values');
+
+$chernozem = new Chernozem\Container(array('foo' => 'bar'));
+$chernozem->readonly('foo');
+
+$suite->expects('readonly()')
+	  ->that(function() use($chernozem) {
+		  $chernozem['foo'] = 'test';
+	  })
+	  ->throws('Chernozem\ContainerException');
+
+########################################################### Service providers
+
+$suite = new MiniSuite\Suite('Service providers');
+
+class MyService implements Chernozem\ServiceProviderInterface {
+	public function register(Interop\Container\ContainerInterface $container) {
+		$container['foo'] = 'bar';
+	}
 }
 
-$minisuite->expects('[Container] Iterate')
-		  ->that($vals)
-		  ->isTheSameAs($values);
+$chernozem = new Chernozem\Container();
+$chernozem->register(new MyService);
 
-########################################################### Properties tests
+$suite->expects('register()')
+	  ->that($chernozem['foo'])
+	  ->equals('bar');
 
-$chernozem=new TestClass;
+########################################################### Delegate container
 
-$minisuite->expects('[Properties] Get value')
-		  ->that($chernozem['a'])
-		  ->equals(72);
+$suite = new MiniSuite\Suite('Delegate container');
 
-$chernozem['a']=33;
+$chernozem = new Chernozem\Container();
+$chernozem2 = new Chernozem\Container();
+$chernozem2['foo'] = 'bar';
+$chernozem->delegate($chernozem2);
 
-$minisuite->expects('[Properties] Set value')
-		  ->that($chernozem['a'])
-		  ->equals(33);
+$chernozem['factory'] = $chernozem->factory(function($container) use($suite) {
+	$suite->expects('factory()')
+		  ->that(function() use($container) {
+			  $container['foo'];
+		  })
+		  ->doesNotThrow();
+});
+$chernozem['factory'];
 
-$minisuite->expects('[Properties] Get value from a limited property')
-		  ->that($chernozem['b'])
-		  ->isTheSameAs(array('72'));
+$chernozem['service'] = $chernozem->service(function($container) use($suite) {
+	$suite->expects('service()')
+		  ->that(function() use($container) {
+			  $container['foo'];
+		  })
+		  ->doesNotThrow();
+});
+$chernozem['service'];
 
-try{
-	$chernozem['b']=33;
-	$val=false;
-}
-catch(Exception $e){
-	$val=true;
-}
+########################################################### Composite container
 
-$minisuite->expects('[Properties] Set value to a limited property')
-		  ->that($val)
-		  ->isTheSameAs(true);
+$suite = new MiniSuite\Suite('Composite container');
 
-$chernozem=new TestClass(array('a'=>'pwet'));
+$chernozem = new Chernozem\Container();
+$chernozem['bar'] = 'foo';
+$chernozem2 = new Chernozem\Container();
+$chernozem2['foo'] = 'bar';
+$composite = new Chernozem\Composite(array($chernozem));
+$composite->add($chernozem2);
 
-$minisuite->expects('[Properties] Set with constructor')
-		  ->that($chernozem['a'])
-		  ->equals('pwet');
+$suite->expects('has() : first container')
+	  ->that($composite->has('bar'))
+	  ->equals(true);
 
-try{
-	$chernozem=new TestClass(array('b'=>'pwet'));
-	$val=false;
-}
-catch(Exception $e){
-	$val=true;
-}
+$suite->expects('has() : second container')
+	  ->that($composite->has('foo'))
+	  ->equals(true);
 
-$minisuite->expects('[Properties] Set with constructor to a limited property')
-		  ->that($val)
-		  ->isTheSameAs(true);
+$suite->expects('has() : not found')
+	  ->that($composite->has('pwet'))
+	  ->equals(false);
 
-$chernozem=new TestClass;
-unset($chernozem['a']);
+$suite->expects('get() : first container')
+	  ->that($composite->get('bar'))
+	  ->equals('foo');
 
-$minisuite->expects('[Properties] Cannot unset a value')
-		  ->that($chernozem['a'])
-		  ->equals(72);
-
-$chernozem=new TestClass(array('a'=>false,'test'));
-
-$minisuite->expects('[Properties] Get values')
-		  ->that($chernozem->toArray())
-		  ->isTheSameAs(array('test'));
-
-########################################################### Services tests
-
-$chernozem=new TestClass;
-$chernozem['service']=function(){
-	return true;
-};
-$chernozem->service('service');
-$chernozem->unservice('service');
-
-$minisuite->expects('[Services] Quickly set/unset a service')
-		  ->that($chernozem['service'])
-		  ->isInstanceOf('Closure');
-
-$chernozem->service('service');
-
-$minisuite->expects('[Services] Set a service')
-		  ->that($chernozem['service'])
-		  ->isTheSameAs(true);
-
-$chernozem->unservice('service');
-
-$minisuite->expects('[Services] Set a service')
-		  ->that($chernozem['service'])
-		  ->isInstanceOf('Closure');
+$suite->expects('get() : second container')
+	  ->that($composite->get('foo'))
+	  ->equals('bar');
