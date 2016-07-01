@@ -164,8 +164,7 @@ The following basic types are supported :
 - float/double
 - string
 - array
-
-Please not that class names are also supported!
+- any class name
 
 Read only values
 ----------------
