@@ -275,7 +275,7 @@ You can retrieve all container values with :
 $values = $chernozem->toArray();
 ```
 
-If you need to get the base closure of a service (not its instance) call `raw()` :
+If you need to get a raw value that has not been modified by inflectors, like the base closure of a service, call `raw()` :
 
 ```php
 $chernozem['some_service'] = $chernozem->service(function($c) {
