@@ -107,7 +107,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		$id = $this->_format($id);
 		// Verify existence
 		if(!$this->has($id)) {
-			throw new NotFoundException("'$id' value not found");
+			throw new NotFoundException("'$id' value does not exist");
 		}
 		// Get value
 		return $this->values[$id]->getValue();
@@ -124,7 +124,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		$id = $this->_format($id);
 		// Verify existence
 		if(!$this->has($id)) {
-			throw new NotFoundException("'$id' value not found");
+			throw new NotFoundException("'$id' value does not exist");
 		}
 		// Remove value
 		unset($this->values[$id]);
@@ -151,7 +151,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		$id = $this->_format($id);
 		// Verify existence
 		if(!$this->has($id)) {
-			throw new NotFoundException("'$id' value not found");
+			throw new NotFoundException("'$id' value does not exist");
 		}
 		// Remove value
 		return $this->values[$id]->getRawValue();
@@ -169,7 +169,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		$id = $this->_format($id);
 		// Verify existence
 		if(!$this->has($id)) {
-			throw new NotFoundException("'$id' value not found");
+			throw new NotFoundException("'$id' value does not exist");
 		}
 		// Add inflector
 		$this->values[$id]->addInputInflector($setter);
@@ -187,7 +187,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		$id = $this->_format($id);
 		// Verify existence
 		if(!$this->has($id)) {
-			throw new NotFoundException("'$id' value not found");
+			throw new NotFoundException("'$id' value does not exist");
 		}
 		// Add inflector
 		$this->values[$id]->addOutputInflector($getter);
@@ -246,7 +246,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		$id = $this->_format($id);
 		// Verify existence
 		if(!$this->has($id)) {
-			throw new NotFoundException("'$id' value not found");
+			throw new NotFoundException("'$id' value does not exist");
 		}
 		// Set inflector
 		$this->values[$id]->addInputInflector(function($value) use($id) {
@@ -267,7 +267,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		$type = strtolower($type);
 		// Verify existence
 		if(!$this->has($id)) {
-			throw new NotFoundException("'$id' value not found");
+			throw new NotFoundException("'$id' value does not exist");
 		}
 		// Set inflector
 		$this->values[$id]->addInputInflector(function($value) use($id, $type) {
@@ -424,6 +424,42 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 	*/
 	public function count() {
 		return count($this->values);
+	}
+
+	/*
+		Set/get magic method
+
+		Parameters
+			string $name
+			array $arguments
+	*/
+	public function __call($name, $arguments) {
+		// Format CamelCase property
+		$format = function($input) {
+			preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
+			$ret = $matches[0];
+			foreach($ret as &$match) {
+				$match = ($match == strtoupper($match) ? strtolower($match) : lcfirst($match));
+			}
+			return implode('_', $ret);
+		};
+		// Extract params
+		$method = substr($name, 0, 3);
+		$property = $format(substr($name, 3));
+		// Verify
+		if(!$this->has($property)) {
+			throw new NotFoundException("'$property' value does not exist");
+		}
+		// Call
+		switch($method) {
+			case 'set':
+			case 'get':
+				array_unshift($arguments, $property);
+				return call_user_func_array(array($this, $method), $arguments);
+				break;
+			default:
+				throw new ContainerException("'$method' method not supported");
+		}
 	}
 	
 }

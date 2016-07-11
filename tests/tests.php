@@ -96,6 +96,13 @@ $suite->expects('clear()')
 	  ->that($chernozem->toArray())
 	  ->equals(array());
 
+$chernozem = new Chernozem\Container(array('final_fantasy' => 7));
+$chernozem->setFinalFantasy(8);
+
+$suite->expects('set/get : methods')
+	  ->that($chernozem->getFinalFantasy())
+	  ->equals(8);
+
 ########################################################### Loops
 
 $suite = new MiniSuite\Suite('Loops');

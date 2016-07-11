@@ -1,4 +1,4 @@
-Chernozem 4.0.0
+Chernozem 4.1.0
 ===============
 
 Chernozem is an advanced dependency injection container based on `ArrayAccess`. It has been primarily designed to be extended by another class, so it takes care of any option for you. But it can also be used as a simple container.
@@ -69,6 +69,16 @@ if($chernozem->has('foo')) {
 
 // Remove a value
 $chernozem->remove('foo');
+```
+
+Or also with this API :
+
+```php
+// Set a value
+$chernozem->setFoo(72);
+
+// Get a value
+echo $chernozem->getFoo();
 ```
 
 You can instantiate Chernozem with some values too :
