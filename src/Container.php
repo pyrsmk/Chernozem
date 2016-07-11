@@ -303,6 +303,9 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		if(is_object($id)) {
 			return spl_object_hash($id);
 		}
+		else if(is_string($id)) {
+			return strtolower($id);
+		}
 		else {
 			return $id;
 		}
