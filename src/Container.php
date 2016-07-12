@@ -290,6 +290,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 			else {
 				throw new ContainerException("'$id' value should be an object or the provided '$type' type hint is not supported");
 			}
+			return $value;
 		});
 	}
 	
