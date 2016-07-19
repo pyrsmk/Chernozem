@@ -17,7 +17,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		array $values
 		Interop\Container\ContainerInterface $delegate_container
 	*/
-	protected $values = array();
+	protected $values = [];
 	protected $delegate_container;
 	
 	/*
@@ -26,7 +26,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		Parameters
 			array $values
 	*/
-	public function __construct(array $values = array()) {
+	public function __construct(array $values = []) {
 		// Append the specified values
 		foreach($values as $id => $value) {
 			$this->set($id, $value);
@@ -134,7 +134,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		Clear all values
 	*/
 	public function clear() {
-		$this->values = array();
+		$this->values = [];
 	}
 	
 	/*
@@ -271,7 +271,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 		}
 		// Set inflector
 		$this->values[$id]->addInputInflector(function($value) use($id, $type) {
-			$types = array('boolean', 'integer', 'double', 'string', 'array');
+			$types = ['boolean', 'integer', 'double', 'string', 'array'];
 			if($type == 'int') $type = 'integer';
 			if($type == 'float') $type = 'double';
 			if($type == 'bool') $type = 'boolean';
@@ -319,7 +319,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 			array
 	*/
 	public function toArray() {
-		$values = array();
+		$values = [];
 		foreach($this->values as $id => $value) {
 			$values[$id] = $value->getRawValue();
 		}
@@ -380,7 +380,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 			mixed
 	*/
 	public function current() {
-		return current($this->values);
+		return current($this->values)->getValue();
 	}
 
 	/*
@@ -456,7 +456,7 @@ class Container implements ContainerInterface, ArrayAccess, Iterator, Countable 
 			case 'set':
 			case 'get':
 				array_unshift($arguments, $property);
-				return call_user_func_array(array($this, $method), $arguments);
+				return call_user_func_array([$this, $method], $arguments);
 				break;
 			default:
 				throw new ContainerException("'$method' method not supported");
