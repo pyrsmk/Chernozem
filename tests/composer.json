@@ -1,6 +1,6 @@
 {
     "require": {
-        "pyrsmk/minisuite": "^4.0",
+        "pyrsmk/minisuite": "^5.0",
         "symfony/class-loader": "^3.1"
     }
 }
