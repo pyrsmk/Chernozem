@@ -15,8 +15,8 @@ class Value {
 		array $outputs
 	*/
 	private $value;
-	private $inputs = array();
-	private $outputs = array();
+	private $inputs = [];
+	private $outputs = [];
 	
 	/*
 		Constructor

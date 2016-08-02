@@ -21,7 +21,7 @@ class Composite extends Container {
 		Parameters
 			array $values
 	*/
-	public function __construct(array $values = array()) {
+	public function __construct(array $values = []) {
 		foreach($values as $container) {
 			if(!($container instanceof ContainerInterface)) {
 				throw new ContainerException("A provided container does not implement ContainerInterface");

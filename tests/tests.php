@@ -273,7 +273,7 @@ $suite->expects('service() : second get')
 $suite = new MiniSuite\Suite('Type hinting');
 
 $suite->hydrate(function($suite) {
-	$suite['chernozem'] = new Chernozem\Container(array(
+	$suite['chernozem'] = new Chernozem\Container([
 		'int' => null,
 		'integer' => null,
 		'float' => null,
@@ -284,7 +284,7 @@ $suite->hydrate(function($suite) {
 		'array' => null,
 		'class' => null,
 		'resource' => null,
-	));
+	]);
 	$suite['chernozem']->hint('int', 'int');
 	$suite['chernozem']->hint('integer', 'integer');
 	$suite['chernozem']->hint('float', 'float');
@@ -389,7 +389,7 @@ $suite->expects('array : fail')
 
 $suite->expects('array : pass')
 	  ->that($suite->protect(function($suite) {
-		  $suite['chernozem']['array'] = array();
+		  $suite['chernozem']['array'] = [];
 	  }))
 	  ->doesNotThrow('Chernozem\ContainerException');
 
@@ -416,7 +416,7 @@ $suite->expects('unsupported type')
 $suite = new MiniSuite\Suite('Read only values');
 
 $suite->hydrate(function($suite) {
-	$suite['chernozem'] = new Chernozem\Container(array('foo' => 'bar'));
+	$suite['chernozem'] = new Chernozem\Container(['foo' => 'bar']);
 });
 
 $suite->expects('readonly()')
@@ -490,7 +490,7 @@ $suite->hydrate(function($suite) {
 	$c1['bar'] = 'foo';
 	$c2 = new Chernozem\Container();
 	$c2['foo'] = 'bar';
-	$suite['composite'] = new Chernozem\Composite(array($c1));
+	$suite['composite'] = new Chernozem\Composite([$c1]);
 	$suite['composite']->add($c2);
 });
 

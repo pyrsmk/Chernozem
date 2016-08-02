@@ -1,4 +1,4 @@
-Chernozem 4.1.2
+Chernozem 4.1.3
 ===============
 
 Chernozem is an advanced dependency injection container based on `ArrayAccess`. It has been primarily designed to be extended by another class, so it takes care of any option for you. But it can also be used as a simple container.
@@ -84,10 +84,10 @@ echo $chernozem->getFoo();
 You can instantiate Chernozem with some values too :
 
 ```php
-$chernozem = new Chernozem\Container(array(
+$chernozem = new Chernozem\Container([
 	'foo' => 72,
 	'bar' => 33
-));
+]);
 ```
 
 You can add values to the container without specifying keys (like with a normal array) :
@@ -160,7 +160,7 @@ Type hinting is a cool feature of Chernozem that let you define the type of a va
 
 ```php
 // Set a list of fruits
-$chernozem['fruits'] = array('apple', 'banana', 'pear');
+$chernozem['fruits'] = ['apple', 'banana', 'pear'];
 // Set type hinting
 $chernozem->hint('fruits', 'array');
 // Oops! Wrong type!
@@ -312,7 +312,7 @@ $chernozem['foo'] = $foo;
 But to simplify this, you can declare a `Chernozem\Container` object instead of an array as your container value, then you'll be able to chain things :
 
 ```php
-$chernozem['foo'] = new Chernozem\Container(array('bar' => 72));
+$chernozem['foo'] = new Chernozem\Container(['bar' => 72]);
 // Print '72'
 echo $chernozem['foo']['bar'];
 $chernozem['foo']['bar'] = 42;
