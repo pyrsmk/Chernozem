@@ -1,4 +1,4 @@
-Chernozem 4.2.0
+Chernozem 4.2.1
 ===============
 
 Chernozem is an advanced dependency injection container based on `ArrayAccess`. It has been primarily designed to be extended by another class, so it takes care of any option for you. But it can also be used as a simple container.
