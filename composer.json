@@ -6,7 +6,7 @@
 	"authors": [{
 		"name": "Aurélien Delogu",
 		"email": "dev@dreamysource.fr",
-		"homepage": "http://dreamysource.io/project/chernozem"
+		"homepage": "https://github.com/pyrsmk/Chernozem"
 	}],
 	"require": {
 		"php": ">=5.4",
